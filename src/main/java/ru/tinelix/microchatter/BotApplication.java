@@ -9,12 +9,28 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.nio.file.*;
 
+import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
 import ru.tinelix.microbot.core.Microchatter;
 
 public class BotApplication {
 	public static void main(String[] args) {
 		printLogo();
 		Microchatter bot = new Microchatter();
+		
+		try {
+			TelegramBotsLongPollingApplication app = 
+				new TelegramBotsLongPollingApplication();
+		
+			app.registerBot(bot.getBotToken(), bot);
+		
+			System.out.println("Microchatter successfully started!\r\n");
+		
+			Thread.currentThread().join();
+		} catch(Exception ex) {
+			
+		}
 	}
 	
 	public static void printLogo() {

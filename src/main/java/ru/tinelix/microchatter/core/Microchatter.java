@@ -10,15 +10,17 @@ import java.sql.SQLException;
 import java.nio.file.*;
 
 import com.ea.async.Async;
-import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
+import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.generics.TelegramClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ru.tinelix.microbot.core.interfaces.LogColorFormatter;
 
-public class Microchatter extends TelegramLongPollingBot implements LogColorFormatter {
+public class Microchatter implements LongPollingSingleThreadUpdateConsumer, LogColorFormatter {
 		
 	public class ChatterConfig {
 		public String 	tg_token;
@@ -42,6 +44,8 @@ public class Microchatter extends TelegramLongPollingBot implements LogColorForm
 	public static final String WARNING_COLOR 	= "\u001B[33m"; // Yellow
 	public static final String ERROR_COLOR 		= "\u001B[31m"; // Red
 	public static final String INFO_COLOR      	= "\u001B[36m"; // Cyan
+
+	private TelegramClient client;
 		
 	public Microchatter() {
 			this.config = new ChatterConfig();
@@ -51,22 +55,20 @@ public class Microchatter extends TelegramLongPollingBot implements LogColorForm
 				config = mapper.readValue(
 					inputStream, ChatterConfig.class
 				);
+				client = new OkHttpTelegramClient(getBotToken());
 			} catch(java.io.IOException | java.lang.NullPointerException e) {
 				onError("Please create 'config/bot.json' file and try again.");
 			}
 	}
 		
-	@Override
 	public void onUpdateReceived(Update update) {
 		
 	}
 	
-	@Override
 	public String getBotToken() {
 		return config.tg_token;
 	}
 		
-	@Override
 	public String getBotUsername() {
 		return config.tg_username;
 	}
@@ -109,5 +111,10 @@ public class Microchatter extends TelegramLongPollingBot implements LogColorForm
 			ERROR_COLOR + "[ERR ] " + RESET_COLOR + message
 		);
 		return true;
+	}
+
+	@Override
+	public void consume(Update update) {
+		// TODO
 	}
 }
