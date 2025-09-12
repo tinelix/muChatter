@@ -9,19 +9,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.nio.file.*;
 
-import ru.tinelix.microbot.core.Microbot;
+import ru.tinelix.microbot.core.Microchatter;
 
 public class BotApplication {
 	public static void main(String[] args) {
 		printLogo();
-		Microbot bot = new Microbot();
+		Microchatter bot = new Microchatter();
 	}
 	
 	public static void printLogo() {
 		System.out.printf(
-			"\r\nTinelix Microbot for Telegram\r\n" +
+			"\r\nMicrochatter for Telegram\r\n" +
 			"Copyright (c) 2025 Dmitry Tretyakov (aka. Tinelix).\r\n" +
-			"https://github.com/tinelix/microbot\r\n\r\n"
+			"https://github.com/tinelix/microchatter\r\n\r\n"
 		);
 
 		System.out.printf(

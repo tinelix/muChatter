@@ -18,23 +18,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ru.tinelix.microbot.core.interfaces.LogColorFormatter;
 
-public class Microbot extends TelegramLongPollingBot implements LogColorFormatter {
+public class Microchatter extends TelegramLongPollingBot implements LogColorFormatter {
 		
-	public class MicrobotConfig {
+	public class ChatterConfig {
 		public String 	tg_token;
 		public String 	tg_username;
 		public String 	name;
 		public long   	tg_bot_owner_id;
 		public boolean	use_irc_bridge;
 		public String 	irc_server;
-		public int	  	irc_port;
+		public int	irc_port;
 		public String 	irc_encoding;
 		public String 	irc_nickname;
 		public String 	irc_ns_passwd;
 		public String 	license;
 	}	
 		
-	private MicrobotConfig config;
+	private ChatterConfig config;
 	private static String VERSION = "0.0.0";
 		
 	public static final String RESET_COLOR 		= "\u001B[0m";
@@ -43,13 +43,13 @@ public class Microbot extends TelegramLongPollingBot implements LogColorFormatte
 	public static final String ERROR_COLOR 		= "\u001B[31m"; // Red
 	public static final String INFO_COLOR      	= "\u001B[36m"; // Cyan
 		
-	public Microbot() {
-			this.config = new MicrobotConfig();
+	public Microchatter() {
+			this.config = new ChatterConfig();
 			try {
 				FileInputStream inputStream = new FileInputStream("config/bot.json");
 				ObjectMapper mapper = new ObjectMapper();
 				config = mapper.readValue(
-					inputStream, MicrobotConfig.class
+					inputStream, ChatterConfig.class
 				);
 			} catch(java.io.IOException | java.lang.NullPointerException e) {
 				onError("Please create 'config/bot.json' file and try again.");
