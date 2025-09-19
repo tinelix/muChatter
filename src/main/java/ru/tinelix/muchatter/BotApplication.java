@@ -1,4 +1,4 @@
-package ru.tinelix.microbot;
+package ru.tinelix.muchatter;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -12,7 +12,7 @@ import java.nio.file.*;
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import ru.tinelix.microbot.core.Microchatter;
+import ru.tinelix.muchatter.core.Microchatter;
 
 public class BotApplication {
 	public static void main(String[] args) {
@@ -25,7 +25,7 @@ public class BotApplication {
 		
 			app.registerBot(bot.getBotToken(), bot);
 		
-			System.out.println("Microchatter successfully started!\r\n");
+			System.out.println("muChatter successfully started!\r\n");
 		
 			Thread.currentThread().join();
 		} catch(Exception ex) {
@@ -35,9 +35,9 @@ public class BotApplication {
 	
 	public static void printLogo() {
 		System.out.printf(
-			"\r\nMicrochatter for Telegram\r\n" +
+			"\r\nmuChatter for Telegram\r\n" +
 			"Copyright (c) 2025 Dmitry Tretyakov (aka. Tinelix).\r\n" +
-			"https://github.com/tinelix/microchatter\r\n\r\n"
+			"https://github.com/tinelix/muChatter\r\n\r\n"
 		);
 
 		System.out.printf(

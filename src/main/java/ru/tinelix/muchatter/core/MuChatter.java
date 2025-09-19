@@ -1,4 +1,4 @@
-package ru.tinelix.microbot.core;
+package ru.tinelix.muchatter.core;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -18,9 +18,9 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import ru.tinelix.microbot.core.interfaces.LogColorFormatter;
+import ru.tinelix.muchatter.core.interfaces.LogColorFormatter;
 
-public class Microchatter implements LongPollingSingleThreadUpdateConsumer, LogColorFormatter {
+public class Muchatter implements LongPollingSingleThreadUpdateConsumer, LogColorFormatter {
 		
 	public class ChatterConfig {
 		public String 	tg_token;
@@ -47,7 +47,7 @@ public class Microchatter implements LongPollingSingleThreadUpdateConsumer, LogC
 
 	private TelegramClient client;
 		
-	public Microchatter() {
+	public MuChatter() {
 			this.config = new ChatterConfig();
 			try {
 				FileInputStream inputStream = new FileInputStream("config/bot.json");

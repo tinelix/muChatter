@@ -1,4 +1,4 @@
-package ru.tinelix.microbot.core.interfaces;
+package ru.tinelix.muchatter.core.interfaces;
 
 public interface LogColorFormatter {
     boolean onSuccess(String message);
