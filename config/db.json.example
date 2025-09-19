@@ -1,0 +1,10 @@
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//   DON'T FORGET TO RENAME THIS FILE TO db.json
+//            AND REMOVE ANY COMMENTS
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+{
+    "sql_addr": "[SQL_ADDRESS]",
+    "username": "[USERNAME]",
+    "password": "[PASSWORD]"
+}

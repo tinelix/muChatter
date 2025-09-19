@@ -35,7 +35,7 @@ public class DatabaseEngine implements LogColorFormatter {
     public static final String INFO_COLOR      	= "\u001B[36m"; // Cyan
 	
 	public static class DatabaseConfig {
-		public String postgresql_url;
+		public String sql_addr;
 		public String username;
 		public String password;
 	}
