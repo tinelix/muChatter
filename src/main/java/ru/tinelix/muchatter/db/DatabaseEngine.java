@@ -1,4 +1,4 @@
-package ru.tinelix.microbot.db;
+package ru.tinelix.muchatter.db;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -19,20 +19,14 @@ import java.util.LinkedHashMap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import ru.tinelix.microbot.core.interfaces.LogColorFormatter;
-import ru.tinelix.microbot.db.SQLProcessor;
+import ru.tinelix.muchatter.core.interfaces.LogColorFormatter;
+import ru.tinelix.muchatter.db.SQLProcessor;
 
 public class DatabaseEngine implements LogColorFormatter {
 	public DatabaseConfig config;
 	public Connection conn;
 	public Exception last_exception;
 	public SQLProcessor sql_proc;
-	
-	Set<String> validTables = new HashSet<>(
-		Arrays.asList(
-			"televisions", "vacuums", "refrigerators", "phones", "computers", "users"
-		)
-	); 
 	
 	public static final String RESET_COLOR 		= "\u001B[0m";
     public static final String SUCCESS_COLOR 	= "\u001B[32m"; // Green
@@ -47,7 +41,6 @@ public class DatabaseEngine implements LogColorFormatter {
 	}
 
 	public DatabaseEngine() {
-		
 		try {
 			FileInputStream inputStream = new FileInputStream("config/db.json");
 			ObjectMapper mapper = new ObjectMapper();
@@ -93,7 +86,7 @@ public class DatabaseEngine implements LogColorFormatter {
 		if(sql_conn < 0)
 			return false;
 			
-		if (!validTables.contains(table.toLowerCase())) {
+		if (!sql_proc.validTables.contains(table.toLowerCase())) {
             onError("Invalid table name provided for ifExist function.");
             return false;
         }
@@ -123,7 +116,7 @@ public class DatabaseEngine implements LogColorFormatter {
 		if(sql_conn < 0)
 			return false;
 			
-		if (!validTables.contains(table.toLowerCase())) {
+		if (!sql_proc.validTables.contains(table.toLowerCase())) {
             onError("Invalid table name provided for ifExist function.");
             return false;
         }

@@ -12,12 +12,12 @@ import java.nio.file.*;
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import ru.tinelix.muchatter.core.Microchatter;
+import ru.tinelix.muchatter.core.MuChatter;
 
 public class BotApplication {
 	public static void main(String[] args) {
 		printLogo();
-		Microchatter bot = new Microchatter();
+		MuChatter bot = new MuChatter();
 		
 		try {
 			TelegramBotsLongPollingApplication app = 

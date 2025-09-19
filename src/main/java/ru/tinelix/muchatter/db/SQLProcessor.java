@@ -1,4 +1,4 @@
-package ru.tinelix.microbot.db;
+package ru.tinelix.muchatter.db;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -13,8 +13,8 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.HashMap;
 
-import ru.tinelix.microbot.db.DatabaseEngine;
-import ru.tinelix.microbot.core.interfaces.LogColorFormatter;
+import ru.tinelix.muchatter.db.DatabaseEngine;
+import ru.tinelix.muchatter.core.interfaces.LogColorFormatter;
 
 public class SQLProcessor implements LogColorFormatter {
 	
@@ -22,6 +22,12 @@ public class SQLProcessor implements LogColorFormatter {
 	private Connection conn;
 	public int last_error_code;
 	public String last_error_desc;
+
+	public Set<String> validTables = new HashSet<>(
+		Arrays.asList(
+			"televisions", "vacuums", "refrigerators", "phones", "computers", "users"
+		)
+	);
 	
 	public SQLProcessor(DatabaseEngine dbEngine) {
 		this.dbEngine = dbEngine;
