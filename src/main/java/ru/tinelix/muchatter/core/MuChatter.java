@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ru.tinelix.muchatter.core.interfaces.LogColorFormatter;
 
-public class Muchatter implements LongPollingSingleThreadUpdateConsumer, LogColorFormatter {
+public class MuChatter implements LongPollingSingleThreadUpdateConsumer, LogColorFormatter {
 		
 	public class ChatterConfig {
 		public String 	tg_token;
