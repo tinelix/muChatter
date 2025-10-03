@@ -59,11 +59,14 @@ public class DatabaseEngine implements LogColorFormatter {
 				config.sql_addr, config.username, config.password
 			);
 			onSuccess("Database connected successfully.");
+
 			sql_proc = new SQLProcessor(this);
+			sql_proc.createTables();
+
 			return 0;
 		} catch(SQLException | java.lang.NullPointerException e) {
 			last_exception = e;
-			onError("Connection refused. Please try again.");
+			onError("Connection refused. Please try again.\r\nMessage: " + e.getMessage());
 			return -1;
 		}
 	}

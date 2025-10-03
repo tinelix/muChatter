@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ru.tinelix.muchatter.core.interfaces.LogColorFormatter;
 import ru.tinelix.muchatter.core.BotCommand;
+import ru.tinelix.muchatter.db.DatabaseEngine;
 
 public class MuChatter implements LongPollingSingleThreadUpdateConsumer, LogColorFormatter {
 		
@@ -50,17 +51,21 @@ public class MuChatter implements LongPollingSingleThreadUpdateConsumer, LogColo
 
 	public TelegramClient mClient;
 
-	public DatabaseEngine mDatabase;
+	private DatabaseEngine mDatabase;
 		
 	public MuChatter() {
 			this.mConfig = new ChatterConfig();
 			try {
+				FileInputStream inputStream = new FileInputStream("config/bot.json");
 				ObjectMapper mapper = new ObjectMapper();
 				mConfig = mapper.readValue(
 					inputStream, ChatterConfig.class
 				);
 				mClient = new OkHttpTelegramClient(getBotToken());
+
 				mDatabase = new DatabaseEngine();
+				mDatabase.connect();
+
 			} catch(java.io.IOException | java.lang.NullPointerException e) {
 				onError("Please create 'config/bot.json' file and try again.\r\n");
 				e.printStackTrace();
@@ -131,7 +136,7 @@ public class MuChatter implements LongPollingSingleThreadUpdateConsumer, LogColo
 			Chat tgChat = update.getMessage().getChat();
 
 			BotCommand command = BotCommand.resolve(
-				this, tgChat, tgFrom, update.getMessage().getText()
+				this, mDatabase, tgChat, tgFrom, update.getMessage().getText()
 			);
 
 			if(command != null)

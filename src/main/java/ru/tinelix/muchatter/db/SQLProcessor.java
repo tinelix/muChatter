@@ -14,7 +14,7 @@ import java.util.HashSet;
 import java.util.HashMap;
 
 import ru.tinelix.muchatter.db.DatabaseEngine;
-//import ru.tinelix.muchatter.db.SQLCreator;
+import ru.tinelix.muchatter.db.SQLCreator;
 import ru.tinelix.muchatter.core.interfaces.LogColorFormatter;
 
 public class SQLProcessor implements LogColorFormatter {
@@ -67,10 +67,14 @@ public class SQLProcessor implements LogColorFormatter {
 			 // Entities
 			 stmt.executeUpdate(SQLCreator.SQL_CREATE_ENTITIES_TABLE);
 
-			 onSuccess("Created ten tables successfully.");
+			 // Spamfilters
+			 stmt.executeUpdate(SQLCreator.SQL_CREATE_SPAM_BLOCKLISTS_TABLE);
+
+			 onSuccess("Created 11 tables successfully.");
         } catch (SQLException e) {
 			dbEngine.last_exception = e;
 			onError("Cannot create tables. Please try again.");
+			e.printStackTrace();
 			last_error_code = -1;
 			return -3;
         }

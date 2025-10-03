@@ -5,24 +5,24 @@ import java.lang.Class;
 import java.lang.Object;
 import java.lang.reflect.Field;
 
-
 import ru.tinelix.muchatter.commands.HelloCommand;
 
 import ru.tinelix.muchatter.core.BotCommand;
 import ru.tinelix.muchatter.core.MuChatter;
+import ru.tinelix.muchatter.db.DatabaseEngine;
 
 public class CommandSearch {
 
-    public static BotCommand find(MuChatter chatter, String cmdText) {
+    public static BotCommand find(MuChatter chatter, DatabaseEngine dbEngine, String cmdText) {
         if(CommandSearch.getCommandNames().containsKey(cmdText)) {
             String cmdName = CommandSearch.getCommandNames().get(cmdText);
-            return loadCommand(cmdName, chatter);
+            return loadCommand(cmdName, dbEngine, chatter);
         }
 
         return null;
     }
 
-    public static BotCommand loadCommand(String cmdName, MuChatter chatter) {
+    public static BotCommand loadCommand(String cmdName, DatabaseEngine dbEngine, MuChatter chatter) {
         try {
             Class<?> clazz = Class.forName(
                 String.format("ru.tinelix.muchatter.commands.%sCommand", cmdName)
@@ -36,8 +36,8 @@ public class CommandSearch {
                     String classCmdName = (String) cmdNameField.get(null);
 
                     Object instance =
-                        clazz.getDeclaredConstructor(MuChatter.class)
-                            .newInstance(chatter);
+                        clazz.getDeclaredConstructor(MuChatter.class, DatabaseEngine.class)
+                            .newInstance(chatter, dbEngine);
 
                     if(cmdName.equals(classCmdName))
                         return (BotCommand) instance;

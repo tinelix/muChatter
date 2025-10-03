@@ -10,12 +10,14 @@ import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import ru.tinelix.muchatter.core.CommandSearch;
+import ru.tinelix.muchatter.db.DatabaseEngine;
 
 public class BotCommand {
 
     protected static final String COMMAND_NAME = "BotCommandExample";
 
     protected MuChatter mChatter;
+    protected DatabaseEngine mDatabase;
     private CommandSearch mSearch;
 
     protected String mMsgText;
@@ -24,12 +26,14 @@ public class BotCommand {
     protected Chat   mTgChat;
     protected User   mTgFrom;
 
-    public BotCommand(MuChatter chatter) {
+    public BotCommand(MuChatter chatter, DatabaseEngine dbEngine) {
         this.mChatter = chatter;
+        this.mDatabase = dbEngine;
     }
 
     public static BotCommand resolve(
         MuChatter chatter,
+        DatabaseEngine dbEngine,
         Chat tgChat,
         User tgFrom,
         String msgText
@@ -46,7 +50,7 @@ public class BotCommand {
         if(firstDelimIndex > 0)
             argsText = msgText.substring(firstDelimIndex + 1);
 
-        BotCommand cmd = CommandSearch.find(chatter, cmdText);
+        BotCommand cmd = CommandSearch.find(chatter, dbEngine, cmdText);
 
         if(cmd != null)
             cmd.parse(tgChat, tgFrom, msgText);

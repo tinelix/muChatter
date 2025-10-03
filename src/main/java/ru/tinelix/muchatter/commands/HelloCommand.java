@@ -11,13 +11,14 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import ru.tinelix.muchatter.core.BotCommand;
 import ru.tinelix.muchatter.core.MuChatter;
+import ru.tinelix.muchatter.db.DatabaseEngine;
 
 public class HelloCommand extends BotCommand {
 
     public static final String COMMAND_NAME = "Hello";
 
-    public HelloCommand(MuChatter chatter) {
-        super(chatter);
+    public HelloCommand(MuChatter chatter, DatabaseEngine dbEngine) {
+        super(chatter, dbEngine);
     }
 
     public void run() {
