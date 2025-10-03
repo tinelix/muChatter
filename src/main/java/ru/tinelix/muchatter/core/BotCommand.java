@@ -1,0 +1,98 @@
+package ru.tinelix.muchatter.core;
+
+import java.util.HashMap;
+
+import org.telegram.telegrambots.meta.generics.TelegramClient;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.chat.Chat;
+import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.User;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
+import ru.tinelix.muchatter.core.CommandSearch;
+
+public class BotCommand {
+
+    protected static final String COMMAND_NAME = "BotCommandExample";
+
+    protected MuChatter mChatter;
+    private CommandSearch mSearch;
+
+    protected String mMsgText;
+    protected String mCmdText;
+    protected String mArgsText;
+    protected Chat   mTgChat;
+    protected User   mTgFrom;
+
+    public BotCommand(MuChatter chatter) {
+        this.mChatter = chatter;
+    }
+
+    public static BotCommand resolve(
+        MuChatter chatter,
+        Chat tgChat,
+        User tgFrom,
+        String msgText
+    ) {
+        String cmdText = "";
+        String argsText = "";
+
+        if(msgText.length() > 0)
+            cmdText = msgText.split(" ")[0];
+
+        // Parse arguments text
+        int firstDelimIndex = msgText.indexOf(" ");
+
+        if(firstDelimIndex > 0)
+            argsText = msgText.substring(firstDelimIndex + 1);
+
+        BotCommand cmd = CommandSearch.find(chatter, cmdText);
+
+        if(cmd != null)
+            cmd.parse(tgChat, tgFrom, msgText);
+
+        return cmd;
+    }
+
+    protected void parse(Chat tgChat, User tgFrom, String msgText) {
+        // Getting Telegram chat info
+        mTgChat = tgChat;
+
+        // Parse command input text
+        mMsgText = msgText;
+
+        mTgFrom = tgFrom;
+
+        if(mMsgText.length() > 0)
+            mCmdText = mMsgText.split(" ")[0];
+
+        // Parse arguments text
+        int firstDelimIndex = msgText.indexOf(" ");
+
+        if(firstDelimIndex > 0)
+            mArgsText = msgText.substring(firstDelimIndex + 1);
+    }
+
+    protected void run() {
+        SendMessage message = new SendMessage(
+            Long.toString(mTgChat.getId()),
+            "BotCommand class test!"
+        );
+        try {
+            mChatter.mClient.execute(message);
+        } catch (TelegramApiException e) {
+            mChatter.onError(e.getMessage());
+        }
+    }
+
+    public static HashMap<String, String> getInformation() {
+        HashMap<String, String> info = new HashMap<String, String>();
+
+        info.put("syntax",    "/cmdname [arguments]");
+        info.put("cmd_desc",  "Command description placeholder");
+        info.put("args_desc", "Arguments description placeholder");
+        info.put("av_rights", "Available rights placeholder");
+
+        return info;
+    }
+}

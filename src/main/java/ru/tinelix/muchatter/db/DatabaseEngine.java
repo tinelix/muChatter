@@ -56,7 +56,7 @@ public class DatabaseEngine implements LogColorFormatter {
 	public int connect() {
 		try {
             conn = DriverManager.getConnection(
-				config.postgresql_url, config.username, config.password
+				config.sql_addr, config.username, config.password
 			);
 			onSuccess("Database connected successfully.");
 			sql_proc = new SQLProcessor(this);
@@ -348,9 +348,9 @@ public class DatabaseEngine implements LogColorFormatter {
         	ERROR_COLOR + "[ERR ] " + RESET_COLOR + message
         );
         if(config != null)
-				onPadding(
-					String.format("PostgreSQL URL: %s",  config.postgresql_url)
-				);
+			onPadding(
+				String.format("SQL Database URL: %s",  config.sql_addr)
+			);
 			onPadding(
 				String.format("Error Message: %s", last_exception.getMessage())
 			);
