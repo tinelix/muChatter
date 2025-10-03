@@ -49,16 +49,18 @@ public class MuChatter implements LongPollingSingleThreadUpdateConsumer, LogColo
 	public ChatterConfig mConfig;
 
 	public TelegramClient mClient;
+
+	public DatabaseEngine mDatabase;
 		
 	public MuChatter() {
 			this.mConfig = new ChatterConfig();
 			try {
-				FileInputStream inputStream = new FileInputStream("config/bot.json");
 				ObjectMapper mapper = new ObjectMapper();
 				mConfig = mapper.readValue(
 					inputStream, ChatterConfig.class
 				);
 				mClient = new OkHttpTelegramClient(getBotToken());
+				mDatabase = new DatabaseEngine();
 			} catch(java.io.IOException | java.lang.NullPointerException e) {
 				onError("Please create 'config/bot.json' file and try again.\r\n");
 				e.printStackTrace();
