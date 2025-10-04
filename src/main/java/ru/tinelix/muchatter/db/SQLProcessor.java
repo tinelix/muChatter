@@ -28,10 +28,10 @@ public class SQLProcessor implements LogColorFormatter {
 		Arrays.asList(
 			"versions",
 			"users", "channels", "groups", "warns",
-			"chat_settings", "user_settings",
-			"chat_stats", "user_stats",
+			"group_settings", "user_settings",
+			"group_stats", "user_stats",
 			"captchas", "spam_filters",
-			"timers", "tickets", "bridges",
+			"timers", "tickets", "group_bridges",
 			"blacklist"
 		)
 	);
@@ -53,7 +53,8 @@ public class SQLProcessor implements LogColorFormatter {
 			 // Users
              stmt.executeUpdate(SQLCreator.SQL_CREATE_USERS_TABLE);
              stmt.executeUpdate(SQLCreator.SQL_CREATE_USER_BLOCKLISTS_TABLE);
-             stmt.executeUpdate(SQLCreator.SQL_CREATE_USER_SCORES_TABLE);
+             stmt.executeUpdate(SQLCreator.SQL_CREATE_USER_STATS_TABLE);
+             stmt.executeUpdate(SQLCreator.SQL_CREATE_USER_SETTINGS_TABLE);
 
              // Channels
 			 stmt.executeUpdate(SQLCreator.SQL_CREATE_CHANNELS_TABLE);
@@ -61,20 +62,19 @@ public class SQLProcessor implements LogColorFormatter {
 			 // Groups
 			 stmt.executeUpdate(SQLCreator.SQL_CREATE_GROUPS_TABLE);
 			 stmt.executeUpdate(SQLCreator.SQL_CREATE_GROUP_WARNINGS_TABLE);
-			 stmt.executeUpdate(SQLCreator.SQL_CREATE_GROUP_SCORES_TABLE);
-			 stmt.executeUpdate(SQLCreator.SQL_CREATE_INTELLICAPTCHA_TABLE);
-
-			 // Entities
-			 stmt.executeUpdate(SQLCreator.SQL_CREATE_ENTITIES_TABLE);
+			 stmt.executeUpdate(SQLCreator.SQL_CREATE_GROUP_STATS_TABLE);
+			 stmt.executeUpdate(SQLCreator.SQL_CREATE_GROUP_SETTINGS_TABLE);
+			 stmt.executeUpdate(SQLCreator.SQL_CREATE_GROUP_CAPTCHAS_TABLE);
+			 stmt.executeUpdate(SQLCreator.SQL_CREATE_GROUP_BRIDGES_TABLE);
 
 			 // Spamfilters
-			 stmt.executeUpdate(SQLCreator.SQL_CREATE_SPAM_BLOCKLISTS_TABLE);
+			 stmt.executeUpdate(SQLCreator.SQL_CREATE_SPAM_FILTERS_TABLE);
 
 			 onSuccess("Created 11 tables successfully.");
         } catch (SQLException e) {
 			dbEngine.last_exception = e;
-			onError("Cannot create tables. Please try again.");
 			e.printStackTrace();
+			onError("Cannot create tables. Please try again.");
 			last_error_code = -1;
 			return -3;
         }

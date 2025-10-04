@@ -36,7 +36,7 @@ public class BotApplication {
 	public static void printLogo() {
 		System.out.printf(
 			"\r\nmuChatter for Telegram\r\n" +
-			"Copyright (c) 2025 Dmitry Tretyakov (aka. Tinelix).\r\n" +
+			"Copyright (c) 2025 Dmitry Tretyakov (aka. Tinelix)\r\n" +
 			"https://github.com/tinelix/muChatter\r\n\r\n"
 		);
 

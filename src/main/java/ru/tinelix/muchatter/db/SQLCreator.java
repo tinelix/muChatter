@@ -15,8 +15,9 @@ public class SQLCreator {
             "first_name VARCHAR(60) NOT NULL, " +
             "last_name VARCHAR(60), " +
             "reg_region VARCHAR(40)," +
-            "reg_date DATE NOT NULL," +
-            "irc_nick VARCHAR(30) " +
+            "reg_date DATE NOT NULL, " +
+            "irc_nickname VARCHAR(30), " +
+            "xmpp_address VARCHAR(30) " +
         ")";
 
     public static final String SQL_CREATE_USER_BLOCKLISTS_TABLE = "" +
@@ -28,13 +29,21 @@ public class SQLCreator {
             "duration TIME " +
         ")";
 
-    public static final String SQL_CREATE_USER_SCORES_TABLE = "" +
-        "CREATE TABLE IF NOT EXISTS user_scores (" +
+    public static final String SQL_CREATE_USER_STATS_TABLE = "" +
+        "CREATE TABLE IF NOT EXISTS user_stats (" +
             "tg_user_id BIGINT PRIMARY KEY, " +
             "score BIGINT NOT NULL, " +
             "level INT NOT NULL, " +
             "messages_count BIGINT NOT NULL, " +
             "levels_act_date DATE NOT NULL" +
+        ")";
+
+    public static final String SQL_CREATE_USER_SETTINGS_TABLE = "" +
+        "CREATE TABLE IF NOT EXISTS user_settings (" +
+            "tg_entities_id BIGINT PRIMARY KEY NOT NULL, " +
+            "ui_language VARCHAR(8) NOT NULL, " +
+            "timezone INT NOT NULL, " +
+            "levels BOOLEAN NOT NULL" +
         ")";
 
     public static final String SQL_CREATE_CHANNELS_TABLE = "" +
@@ -48,12 +57,7 @@ public class SQLCreator {
         "CREATE TABLE IF NOT EXISTS groups (" +
             "tg_group_id BIGINT PRIMARY KEY, " +
             "name VARCHAR(120) NOT NULL, " +
-            "public_name VARCHAR(180), " +
-            "linked_channel_id BIGINT NOT NULL, " +
-            "comments_only BOOLEAN NOT NULL, " +
-            "irc_channel VARCHAR(30), " +
-            "warns_amount INT NOT NULL, " +
-            "levels BOOLEAN NOT NULL" +
+            "public_name VARCHAR(180) " +
         ")";
 
     public static final String SQL_CREATE_GROUP_WARNINGS_TABLE = "" +
@@ -65,8 +69,8 @@ public class SQLCreator {
             "duration TIME " +
         ")";
 
-    public static final String SQL_CREATE_GROUP_SCORES_TABLE = "" +
-        "CREATE TABLE IF NOT EXISTS group_scores (" +
+    public static final String SQL_CREATE_GROUP_STATS_TABLE = "" +
+        "CREATE TABLE IF NOT EXISTS group_stats (" +
             "tg_group_id BIGINT PRIMARY KEY, " +
             "tg_user_id BIGINT, " +
             "score BIGINT NOT NULL, " +
@@ -75,8 +79,30 @@ public class SQLCreator {
             "levels_act_date DATE NOT NULL" +
         ")";
 
-    public static final String SQL_CREATE_INTELLICAPTCHA_TABLE = "" +
-        "CREATE TABLE IF NOT EXISTS intellicaptcha_warnings (" +
+    public static final String SQL_CREATE_GROUP_SETTINGS_TABLE = "" +
+        "CREATE TABLE IF NOT EXISTS group_settings (" +
+            "tg_entities_id BIGINT PRIMARY KEY NOT NULL, " +
+            "ui_language VARCHAR(8) NOT NULL, " +
+            "timezone INT NOT NULL, " +
+            "linked_channel_id BIGINT NOT NULL, " +
+            "comments_only BOOLEAN NOT NULL, " +
+            "irc_bridge BOOLEAN NOT NULL, " +
+            "xmpp_bridge BOOLEAN NOT NULL, " +
+            "matrix_bridge BOOLEAN NOT NULL, " +
+            "warns_amount INT NOT NULL, " +
+            "levels BOOLEAN NOT NULL" +
+        ")";
+
+    public static final String SQL_CREATE_GROUP_BRIDGES_TABLE = "" +
+        "CREATE TABLE IF NOT EXISTS group_bridges (" +
+            "tg_group_id BIGINT PRIMARY KEY, " +
+            "irc_channel VARCHAR(30) NOT NULL, " +
+            "xmpp_group_id VARCHAR(255) NOT NULL, " +
+            "matrix_group_id VARCHAR(255) NOT NULL " +
+        ")";
+
+    public static final String SQL_CREATE_GROUP_CAPTCHAS_TABLE = "" +
+        "CREATE TABLE IF NOT EXISTS group_captchas (" +
             "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
             "tg_group_id BIGINT NOT NULL, " +
             "question VARCHAR(255) NOT NULL, " +
@@ -86,21 +112,16 @@ public class SQLCreator {
             "answer2 VARCHAR(30), " +
             "answer3 VARCHAR(30), " +
             "answer4 VARCHAR(30), " +
-            "duration TIME NOT NULL" +
+            "duration TIME NOT NULL, " +
+            "accepted BIGINT NOT NULL, " +
+            "declined BIGINT NOT NULL " +
         ")";
 
-    public static final String SQL_CREATE_ENTITIES_TABLE = "" +
-        "CREATE TABLE IF NOT EXISTS entities (" +
-            "tg_entities_id BIGINT PRIMARY KEY NOT NULL, " +
-            "ui_language VARCHAR(8) NOT NULL, " +
-            "timezone INT NOT NULL " +
-        ")";
-
-    public static final String SQL_CREATE_SPAM_BLOCKLISTS_TABLE = "" +
-        "CREATE TABLE IF NOT EXISTS spam_blocklists (" +
+    public static final String SQL_CREATE_SPAM_FILTERS_TABLE = "" +
+        "CREATE TABLE IF NOT EXISTS spam_filters (" +
             "id BIGINT AUTO_INCREMENT PRIMARY KEY NOT NULL," +
             "tg_group_id BIGINT, " +
-            "content TEXT NOT NULL, " +
+            "content_regex TEXT NOT NULL, " +
             "reason VARCHAR(255) NOT NULL " +
         ")";
 }

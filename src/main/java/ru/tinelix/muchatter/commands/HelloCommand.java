@@ -22,6 +22,7 @@ public class HelloCommand extends BotCommand {
     }
 
     public void run() {
+
         SendMessage message = new SendMessage(
             Long.toString(mTgChat.getId()),
             String.format(
