@@ -31,8 +31,7 @@ public class SQLProcessor implements LogColorFormatter {
 			"group_settings", "user_settings",
 			"group_stats", "user_stats",
 			"captchas", "spam_filters",
-			"timers", "tickets", "group_bridges",
-			"blacklist"
+			"group_bridges", "user_blocklists"
 		)
 	);
 	
