@@ -70,7 +70,7 @@ public class SQLProcessor implements LogColorFormatter {
 			 // Spamfilters
 			 stmt.executeUpdate(SQLCreator.SQL_CREATE_SPAM_FILTERS_TABLE);
 
-			 onSuccess("Created 11 tables successfully.");
+			 onSuccess("Created 13 tables successfully.");
         } catch (SQLException e) {
 			dbEngine.last_exception = e;
 			e.printStackTrace();
