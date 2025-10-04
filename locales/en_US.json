@@ -4,7 +4,7 @@
     "muchatter_l10n_ver":    "v0.0.1",
     "muchatter_l10n_author": "Dmitry Tretyakov (tretdm)",
 
-    "strings": {
+    "muchatter_l10n_strings": {
         "greetings": "Hi, %s. My name is μChatter (muChatter) - is your indispensable companion in chats.\r\nThe bot is currently in alpha testing, so we recommend checking out the @tinelix channel for updates."
     }
 }
