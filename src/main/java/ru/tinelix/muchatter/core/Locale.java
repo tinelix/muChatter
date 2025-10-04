@@ -1,94 +1,129 @@
 package ru.tinelix.muchatter.core;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.IOException;
+import java.util.List;
+
+import org.apache.commons.io.IOUtils;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class Locale {
 
     public static String translate(String langCode, String resId) {
         String localeFileName = String.format("../locale/%s.json", langCode);
 
-        Object obj = new JSONParser().parse(
-            new FileReader(localeFileName)
-        );
+        try {
+            File f = new File("file.json");
 
-        JSONObject json = (JSONObject) obj;
+            if (!f.exists()) return String.format("[%s|%s]", langCode, resId);
 
+            InputStream is = new FileInputStream(localeFileName);
+            String jsonTxt = IOUtils.toString(is, "UTF-8");
 
-        if(json.has("muchatter_l10n_strings")) {
-            JSONObject strings = json.getJsonObject("muchatter_l10n_strings");
+            JSONObject json = new JSONObject(jsonTxt);
 
-            if(strings.has(resId) && !strings.isNull(resId)) {
-                return (String) strings.get(resId);
+            if(json.has("muchatter_l10n_strings")) {
+                JSONObject strings = (JSONObject) json.get("muchatter_l10n_strings");
+
+                if(strings.has(resId) && !strings.isNull(resId)) {
+                    return (String) strings.get(resId);
+                }
             }
-        }
+        } catch(IOException ex) {}
 
-        return null;
+        return String.format("[%s|%s]", langCode, resId);
     }
 
-    public static String translate(String language, String resId, List<Object> args) {
+    public static String translate(String langCode, String resId, List<Object> args) {
         String localeFileName = String.format("../locale/%s.json", langCode);
 
-        Object obj = new JSONParser().parse(
-            new FileReader(localeFileName)
-        );
+        try {
+            File f = new File("file.json");
 
-        JSONObject json = (JSONObject) obj;
+            if (!f.exists()) return String.format("[%s|%s]", langCode, resId);
 
+            InputStream is = new FileInputStream(localeFileName);
+            String jsonTxt = IOUtils.toString(is, "UTF-8");
 
-        if(json.has("muchatter_l10n_strings")) {
-            JSONObject strings = json.getJsonObject("muchatter_l10n_strings");
+            JSONObject json = new JSONObject(jsonTxt);
 
-            if(strings.has(resId) && !strings.isNull(resId)) {
-                return (String) String.format(strings.get(resId), args.toArray());
+            if(json.has("muchatter_l10n_strings")) {
+                JSONObject strings = (JSONObject) json.get("muchatter_l10n_strings");
+
+                if(strings.has(resId) && !strings.isNull(resId)) {
+                    return String.format((String) strings.get(resId), args.toArray());
+                }
             }
-        }
+        } catch(IOException ex) {}
 
-        return null;
+        return String.format("[%s|%s]", langCode, resId);
     }
 
-    public static String translate(String language, String resId, int index) {
+    public static String translate(String langCode, String resId, int index) {
         String localeFileName = String.format("../locale/%s.json", langCode);
 
-        Object obj = new JSONParser().parse(
-            new FileReader(localeFileName)
-        );
+        try {
+            File f = new File("file.json");
 
-        JSONObject json = (JSONObject) obj;
+            if (!f.exists()) return String.format("[%s|%s]", langCode, resId);
 
-        if(json.has("muchatter_l10n_arrays")) {
-            JSONObject arrays = json.getJsonObject("muchatter_l10n_arrays");
+            InputStream is = new FileInputStream(localeFileName);
+            String jsonTxt = IOUtils.toString(is, "UTF-8");
 
-            if(arrays.has(resId) && !arrays.isNull(resId)) {
-                JSONArray array = arrays.getJsonArray(resId);
+            JSONObject json = new JSONObject(jsonTxt);
 
-                return (String) String.format((String) array.get(index), args.toArray());
+            if(json.has("muchatter_l10n_arrays")) {
+                JSONObject arrays =  (JSONObject) json.get("muchatter_l10n_arrays");
+
+                if(arrays.has(resId) && !arrays.isNull(resId)) {
+                    JSONArray array = (JSONArray) arrays.get(resId);
+
+                    return (String) array.get(index);
+                }
             }
-        }
+        } catch(IOException ex) {}
 
-        return null;
+        return String.format("[%s|%s]", langCode, resId);
     }
 
-    public static String translate(String language, String resId, int index, List<Object> args) {
+    public static String translate(String langCode, String resId, int index, List<Object> args) {
         String localeFileName = String.format("../locale/%s.json", langCode);
 
-        Object obj = new JSONParser().parse(
-            new FileReader(localeFileName)
-        );
+        try {
+        File f = new File("file.json");
 
-        JSONObject json = (JSONObject) obj;
+            if (!f.exists()) return String.format("[%s|%s]", langCode, resId);
 
-        if(json.has("muchatter_l10n_arrays")) {
-            JSONObject arrays = json.getJsonObject("muchatter_l10n_arrays");
+            InputStream is = new FileInputStream(localeFileName);
+            String jsonTxt = IOUtils.toString(is, "UTF-8");
 
-            if(arrays.has(resId) && !arrays.isNull(resId)) {
-                JSONArray array = arrays.get(resId);
+            JSONObject json = new JSONObject(jsonTxt);
 
-                return String.format((String) array.get(index), args.toArray());
+            if(json.has("muchatter_l10n_arrays")) {
+                JSONObject arrays =  (JSONObject) json.get("muchatter_l10n_arrays");
+
+                if(arrays.has(resId) && !arrays.isNull(resId)) {
+                    JSONArray array = (JSONArray) arrays.get(resId);
+                    return String.format((String) array.get(index), args.toArray());
+                }
             }
-        }
 
-        return null;
+            if(json.has("muchatter_l10n_arrays")) {
+                JSONObject arrays = (JSONObject) json.get("muchatter_l10n_arrays");
+
+                if(arrays.has(resId) && !arrays.isNull(resId)) {
+                    JSONArray array = (JSONArray) arrays.get(resId);
+
+                    return String.format((String) array.get(index), args.toArray());
+                }
+            }
+
+        } catch(IOException ex) {}
+
+        return String.format("[%s|%s]", langCode, resId);
     }
 }
