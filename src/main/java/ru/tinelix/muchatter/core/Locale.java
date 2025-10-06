@@ -14,12 +14,12 @@ import org.json.JSONObject;
 public class Locale {
 
     public static String translate(String langCode, String resId) {
-        String localeFileName = String.format("../locale/%s.json", langCode);
+        String localeFileName = String.format("locales/%s.json", langCode);
 
         try {
-            File f = new File("file.json");
+            File f = new File(localeFileName);
 
-            if (!f.exists()) return String.format("[%s|%s]", langCode, resId);
+            if (!f.exists()) return String.format("[%s|str|%s]", langCode, resId);
 
             InputStream is = new FileInputStream(localeFileName);
             String jsonTxt = IOUtils.toString(is, "UTF-8");
@@ -35,16 +35,16 @@ public class Locale {
             }
         } catch(IOException ex) {}
 
-        return String.format("[%s|%s]", langCode, resId);
+        return String.format("[%s|str|%s]", langCode, resId);
     }
 
     public static String translate(String langCode, String resId, List<Object> args) {
-        String localeFileName = String.format("../locale/%s.json", langCode);
+        String localeFileName = String.format("locales/%s.json", langCode);
 
         try {
-            File f = new File("file.json");
+            File f = new File(localeFileName);
 
-            if (!f.exists()) return String.format("[%s|%s]", langCode, resId);
+            if (!f.exists()) return String.format("[%s|str|%s]", langCode, resId);
 
             InputStream is = new FileInputStream(localeFileName);
             String jsonTxt = IOUtils.toString(is, "UTF-8");
@@ -58,18 +58,20 @@ public class Locale {
                     return String.format((String) strings.get(resId), args.toArray());
                 }
             }
-        } catch(IOException ex) {}
+        } catch(IOException ex) {
+            ex.printStackTrace();
+        }
 
-        return String.format("[%s|%s]", langCode, resId);
+        return String.format("[%s|str|%s]", langCode, resId);
     }
 
     public static String translate(String langCode, String resId, int index) {
-        String localeFileName = String.format("../locale/%s.json", langCode);
+        String localeFileName = String.format("locales/%s.json", langCode);
 
         try {
-            File f = new File("file.json");
+            File f = new File(localeFileName);
 
-            if (!f.exists()) return String.format("[%s|%s]", langCode, resId);
+            if (!f.exists()) return String.format("[%s|arr[%d]|%s]", langCode, index, resId);
 
             InputStream is = new FileInputStream(localeFileName);
             String jsonTxt = IOUtils.toString(is, "UTF-8");
@@ -87,16 +89,16 @@ public class Locale {
             }
         } catch(IOException ex) {}
 
-        return String.format("[%s|%s]", langCode, resId);
+        return String.format("[%s|arr[%d]|%s]", langCode, index, resId);
     }
 
     public static String translate(String langCode, String resId, int index, List<Object> args) {
-        String localeFileName = String.format("../locale/%s.json", langCode);
+        String localeFileName = String.format("locales/%s.json", langCode);
 
         try {
-        File f = new File("file.json");
+        File f = new File(localeFileName);
 
-            if (!f.exists()) return String.format("[%s|%s]", langCode, resId);
+            if (!f.exists()) return String.format("[%s|arr[%d]|%s]", langCode, index, resId);
 
             InputStream is = new FileInputStream(localeFileName);
             String jsonTxt = IOUtils.toString(is, "UTF-8");
@@ -124,6 +126,6 @@ public class Locale {
 
         } catch(IOException ex) {}
 
-        return String.format("[%s|%s]", langCode, resId);
+        return String.format("[%s|arr[%d]|%s]", langCode, index, resId);
     }
 }

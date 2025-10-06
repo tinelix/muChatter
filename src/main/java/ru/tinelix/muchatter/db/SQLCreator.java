@@ -14,10 +14,10 @@ public class SQLCreator {
             "tg_nickname VARCHAR(180)," +
             "first_name VARCHAR(60) NOT NULL, " +
             "last_name VARCHAR(60), " +
-            "reg_region VARCHAR(40)," +
             "reg_date DATE NOT NULL, " +
             "irc_nickname VARCHAR(30), " +
-            "xmpp_address VARCHAR(30) " +
+            "xmpp_address VARCHAR(255), " +
+            "matrix_address VARCHAR(255) " +
         ")";
 
     public static final String SQL_CREATE_USER_BLOCKLISTS_TABLE = "" +
@@ -26,7 +26,9 @@ public class SQLCreator {
             "tg_user_id BIGINT NOT NULL, " +
             "reason VARCHAR(255) NOT NULL, " +
             "ban_date DATE NOT NULL, " +
-            "duration TIME " +
+            "duration TIME, " +
+            "CONSTRAINT user_blocklists_fk " +
+            "FOREIGN KEY (tg_user_id) REFERENCES users (tg_user_id)" +
         ")";
 
     public static final String SQL_CREATE_USER_STATS_TABLE = "" +
@@ -35,15 +37,19 @@ public class SQLCreator {
             "score BIGINT NOT NULL, " +
             "level INT NOT NULL, " +
             "messages_count BIGINT NOT NULL, " +
-            "levels_act_date DATE NOT NULL" +
+            "levels_act_date DATE NOT NULL, " +
+            "CONSTRAINT user_stats_fk " +
+            "FOREIGN KEY (tg_user_id) REFERENCES users (tg_user_id)" +
         ")";
 
     public static final String SQL_CREATE_USER_SETTINGS_TABLE = "" +
         "CREATE TABLE IF NOT EXISTS user_settings (" +
-            "tg_entities_id BIGINT PRIMARY KEY NOT NULL, " +
+            "tg_user_id BIGINT PRIMARY KEY NOT NULL, " +
             "ui_language VARCHAR(8) NOT NULL, " +
             "timezone INT NOT NULL, " +
-            "levels BOOLEAN NOT NULL" +
+            "levels BOOLEAN NOT NULL, " +
+            "CONSTRAINT user_settings_fk " +
+            "FOREIGN KEY (tg_user_id) REFERENCES users (tg_user_id)" +
         ")";
 
     public static final String SQL_CREATE_CHANNELS_TABLE = "" +
@@ -76,12 +82,14 @@ public class SQLCreator {
             "score BIGINT NOT NULL, " +
             "level INT NOT NULL, " +
             "messages_count BIGINT NOT NULL, " +
-            "levels_act_date DATE NOT NULL" +
+            "levels_act_date DATE NOT NULL, " +
+            "CONSTRAINT group_stats_fk " +
+            "FOREIGN KEY (tg_group_id) REFERENCES groups (tg_group_id)" +
         ")";
 
     public static final String SQL_CREATE_GROUP_SETTINGS_TABLE = "" +
         "CREATE TABLE IF NOT EXISTS group_settings (" +
-            "tg_entities_id BIGINT PRIMARY KEY NOT NULL, " +
+            "tg_group_id BIGINT PRIMARY KEY NOT NULL, " +
             "ui_language VARCHAR(8) NOT NULL, " +
             "timezone INT NOT NULL, " +
             "linked_channel_id BIGINT NOT NULL, " +
@@ -90,7 +98,9 @@ public class SQLCreator {
             "xmpp_bridge BOOLEAN NOT NULL, " +
             "matrix_bridge BOOLEAN NOT NULL, " +
             "warns_amount INT NOT NULL, " +
-            "levels BOOLEAN NOT NULL" +
+            "levels BOOLEAN NOT NULL, " +
+            "CONSTRAINT group_settings_fk " +
+            "FOREIGN KEY (tg_group_id) REFERENCES groups (tg_group_id)" +
         ")";
 
     public static final String SQL_CREATE_GROUP_BRIDGES_TABLE = "" +
@@ -98,7 +108,9 @@ public class SQLCreator {
             "tg_group_id BIGINT PRIMARY KEY, " +
             "irc_channel VARCHAR(30) NOT NULL, " +
             "xmpp_group_id VARCHAR(255) NOT NULL, " +
-            "matrix_group_id VARCHAR(255) NOT NULL " +
+            "matrix_group_id VARCHAR(255) NOT NULL, " +
+            "CONSTRAINT group_bridges_fk " +
+            "FOREIGN KEY (tg_group_id) REFERENCES groups (tg_group_id)" +
         ")";
 
     public static final String SQL_CREATE_GROUP_CAPTCHAS_TABLE = "" +
@@ -122,6 +134,8 @@ public class SQLCreator {
             "id BIGINT AUTO_INCREMENT PRIMARY KEY NOT NULL," +
             "tg_group_id BIGINT, " +
             "content_regex TEXT NOT NULL, " +
-            "reason VARCHAR(255) NOT NULL " +
+            "reason VARCHAR(255) NOT NULL, " +
+            "CONSTRAINT group_spamfilters_fk " +
+            "FOREIGN KEY (tg_group_id) REFERENCES groups (tg_group_id)" +
         ")";
 }
