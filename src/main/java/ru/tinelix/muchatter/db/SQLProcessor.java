@@ -13,9 +13,16 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.HashMap;
 
+import org.telegram.telegrambots.meta.api.objects.chat.Chat;
+import org.telegram.telegrambots.meta.api.objects.chat.ChatFullInfo;
+import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChat;
+import org.telegram.telegrambots.meta.api.objects.User;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
 import ru.tinelix.muchatter.db.DatabaseEngine;
 import ru.tinelix.muchatter.db.SQLCreator;
 import ru.tinelix.muchatter.core.interfaces.LogColorFormatter;
+import ru.tinelix.muchatter.core.MuChatter;
 
 public class SQLProcessor implements LogColorFormatter {
 	
@@ -79,6 +86,68 @@ public class SQLProcessor implements LogColorFormatter {
         }
         return 0;
 	}
+
+	public static void registerUserIntoDb(MuChatter chatter, DatabaseEngine dbEngine, Chat tgChat, User tgUser) {
+        try {
+            if(!dbEngine.ifExist("users", "tg_user_id", tgUser.getId())) {
+                GetChat chatInfoApi = GetChat
+                                            .builder()
+                                            .chatId(tgChat.getId())
+                                            .build();
+
+                ChatFullInfo chatInfo = chatter.mClient.execute(chatInfoApi);
+
+                dbEngine.add(
+                    "users",
+                    String.format(
+                        "%d, %s, \"%s\", %s, \"%s\", NULL, NULL, NULL",
+                        tgUser.getId(),
+                        tgUser.getUserName() == null ? "NULL" : String.format("\"%s\"", tgUser.getUserName()),
+                        tgUser.getFirstName(),
+                        tgUser.getLastName() == null ? "NULL" : String.format("\"%s\"", tgUser.getLastName()),
+                        "1800-01-01",
+                        "1800-01-01",
+                        "1800-01-01"
+                    )
+                );
+            }
+
+            if(!dbEngine.ifExist("user_settings", "tg_user_id", tgUser.getId())) {
+                dbEngine.add(
+                    "user_settings",
+                    String.format(
+                        "%d, %s, 180, FALSE",
+                        tgUser.getId(),
+                        tgUser.getLanguageCode() == null ? "NULL" : String.format("\"%s\"", tgUser.getLanguageCode())
+                    )
+                );
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static ResultSet getUserFromDb(MuChatter chatter, DatabaseEngine dbEngine, User tgUser, String suffix) {
+        try {
+            String table_name = "users";
+            ResultSet resultSet;
+
+            if(suffix != null && !suffix.equals(""))
+                table_name = String.format("user_%s", suffix);
+
+            if(dbEngine.ifExist(table_name, "tg_user_id", Long.toString(tgUser.getId()))) {
+                resultSet = dbEngine.select("*", table_name, Long.toString(tgUser.getId()));
+                resultSet.next();
+                return resultSet;
+            } else
+                return null;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
     
     @Override
     public boolean onSuccess(String message) {

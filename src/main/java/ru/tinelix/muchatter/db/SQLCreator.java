@@ -14,7 +14,7 @@ public class SQLCreator {
             "tg_nickname VARCHAR(180)," +
             "first_name VARCHAR(60) NOT NULL, " +
             "last_name VARCHAR(60), " +
-            "reg_date DATE NOT NULL, " +
+            "birth_date DATE NOT NULL, " +
             "irc_nickname VARCHAR(30), " +
             "xmpp_address VARCHAR(255), " +
             "matrix_address VARCHAR(255) " +

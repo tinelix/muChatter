@@ -14,6 +14,10 @@ import org.json.JSONObject;
 public class Locale {
 
     public static String translate(String langCode, String resId) {
+
+        if(!langCode.contains("_"))
+            langCode += "_Int";
+
         String localeFileName = String.format("locales/%s.json", langCode);
 
         try {
@@ -39,6 +43,10 @@ public class Locale {
     }
 
     public static String translate(String langCode, String resId, List<Object> args) {
+
+        if(!langCode.contains("_"))
+            langCode += "_Int";
+
         String localeFileName = String.format("locales/%s.json", langCode);
 
         try {
@@ -66,6 +74,9 @@ public class Locale {
     }
 
     public static String translate(String langCode, String resId, int index) {
+        if(!langCode.contains("_"))
+            langCode += "_Int";
+
         String localeFileName = String.format("locales/%s.json", langCode);
 
         try {
@@ -93,6 +104,9 @@ public class Locale {
     }
 
     public static String translate(String langCode, String resId, int index, List<Object> args) {
+        if(!langCode.contains("_"))
+            langCode += "_Int";
+
         String localeFileName = String.format("locales/%s.json", langCode);
 
         try {

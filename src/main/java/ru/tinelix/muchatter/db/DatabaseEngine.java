@@ -124,7 +124,7 @@ public class DatabaseEngine implements LogColorFormatter {
             return false;
         }
         
-        String safeTableName = '"' + table.replace("\"", "\"\"") + '"';
+        String safeTableName = table.replace("\"", "\"\"");
         
         String sqlIfExist = "" +
 			"SELECT EXISTS(SELECT 1 FROM " + safeTableName + 
@@ -142,6 +142,37 @@ public class DatabaseEngine implements LogColorFormatter {
 			return false;
 		}
 		
+		return false;
+	}
+
+	public boolean ifExist(String table, String column, long value) {
+		int sql_conn = checkSQLConnection();
+		if(sql_conn < 0)
+			return false;
+
+		if (!sql_proc.validTables.contains(table.toLowerCase())) {
+            onError("Invalid table name provided for ifExist function.");
+            return false;
+        }
+
+        String safeTableName = table.replace("\"", "\"\"");
+
+        String sqlIfExist = "" +
+			"SELECT EXISTS(SELECT 1 FROM " + safeTableName +
+			" WHERE " + column + " = ?)";
+
+		try (PreparedStatement pstmt = conn.prepareStatement(sqlIfExist)) {
+			pstmt.setLong(1, value);
+			ResultSet rs = pstmt.executeQuery();
+			if (rs.next()) {
+				return rs.getBoolean(1);
+			}
+		} catch (SQLException e) {
+			last_exception = e;
+			onError("Cannot check values if exist. Please try again.");
+			return false;
+		}
+
 		return false;
 	}
 	
@@ -190,7 +221,7 @@ public class DatabaseEngine implements LogColorFormatter {
     public boolean add(String table, String values) throws SQLException {
 		
         StringBuilder query = new StringBuilder("INSERT INTO ");
-        query.append(table).append(" VALUES ").append(values).append(";");
+        query.append(table).append(" VALUES (").append(values).append(");");
         
         if (values.isEmpty()) {
             return false;
