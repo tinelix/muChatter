@@ -5,6 +5,17 @@
     "muchatter_l10n_author": "Dmitry Tretyakov (tretdm)",
 
     "muchatter_l10n_strings": {
-        "greetings": "Hi, %s. My name is μChatter (muChatter) - is your indispensable companion in chats.\r\n\r\nThe bot is currently in alpha testing, so we recommend checking out the @tinelix channel for updates."
+        "greetings": "Hi, %s. My name is μChatter (muChatter) - is your indispensable companion in chats.\r\n\r\nThe bot is currently in alpha testing, so we recommend checking out the @tinelix channel for updates.",
+    },
+
+    "muchatter_l10n_arrays": {
+        "on_off": ["Enabled", "Disabled"],
+        "user_settings_list": ["User Rating", "Timezone"],
+    },
+
+    "muchatter_l10n_plurals": {
+        "users": ["user", "users", "users"],
+        "members": ["member", "members", "members"],
+        "scores": ["score", "scores"]
     }
 }

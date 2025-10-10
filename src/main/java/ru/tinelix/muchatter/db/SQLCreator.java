@@ -15,6 +15,9 @@ public class SQLCreator {
             "first_name VARCHAR(60) NOT NULL, " +
             "last_name VARCHAR(60), " +
             "birth_date DATE NOT NULL, " +
+            "interests VARCHAR(255), " +
+            "hobbys VARCHAR(255), " +
+            "city VARCHAR(40), " +
             "irc_nickname VARCHAR(30), " +
             "xmpp_address VARCHAR(255), " +
             "matrix_address VARCHAR(255) " +
@@ -42,12 +45,23 @@ public class SQLCreator {
             "FOREIGN KEY (tg_user_id) REFERENCES users (tg_user_id)" +
         ")";
 
+    public static final String SQL_CREATE_USER_REPUTATIONS_TABLE = "" +
+        "CREATE TABLE IF NOT EXISTS user_reps (" +
+            "tg_from_id BIGINT PRIMARY KEY, " +
+            "tg_to_id BIGINT NOT NULL, " +
+            "rating INT NOT NULL, " +
+            "reason VARCHAR(250) NOT NULL, " +
+            "CONSTRAINT user_reputations_fk " +
+            "FOREIGN KEY (tg_from_id) REFERENCES users (tg_user_id)" +
+        ")";
+
     public static final String SQL_CREATE_USER_SETTINGS_TABLE = "" +
         "CREATE TABLE IF NOT EXISTS user_settings (" +
             "tg_user_id BIGINT PRIMARY KEY NOT NULL, " +
             "ui_language VARCHAR(8) NOT NULL, " +
             "timezone INT NOT NULL, " +
             "levels BOOLEAN NOT NULL, " +
+            "reps BOOLEAN NOT NULL, " +
             "CONSTRAINT user_settings_fk " +
             "FOREIGN KEY (tg_user_id) REFERENCES users (tg_user_id)" +
         ")";
@@ -94,6 +108,7 @@ public class SQLCreator {
             "timezone INT NOT NULL, " +
             "linked_channel_id BIGINT NOT NULL, " +
             "comments_only BOOLEAN NOT NULL, " +
+            "block_by_user_rep BIGINT NOT NULL, " + // less or equal
             "irc_bridge BOOLEAN NOT NULL, " +
             "xmpp_bridge BOOLEAN NOT NULL, " +
             "matrix_bridge BOOLEAN NOT NULL, " +

@@ -34,11 +34,12 @@ public class SQLProcessor implements LogColorFormatter {
 	public Set<String> validTables = new HashSet<>(
 		Arrays.asList(
 			"versions",
-			"users", "channels", "groups", "warns",
-			"group_settings", "user_settings",
-			"group_stats", "user_stats",
-			"captchas", "spam_filters",
-			"group_bridges", "user_blocklists"
+			"users", "user_stats", "user_reps",
+            "group_settings", "user_settings",
+			"group_stats", "group_captchas",
+			"group_bridges", "channels", "groups",
+			"warns", "spam_filters",
+			"user_blocklists"
 		)
 	);
 	
@@ -60,6 +61,7 @@ public class SQLProcessor implements LogColorFormatter {
              stmt.executeUpdate(SQLCreator.SQL_CREATE_USERS_TABLE);
              stmt.executeUpdate(SQLCreator.SQL_CREATE_USER_BLOCKLISTS_TABLE);
              stmt.executeUpdate(SQLCreator.SQL_CREATE_USER_STATS_TABLE);
+             stmt.executeUpdate(SQLCreator.SQL_CREATE_USER_REPUTATIONS_TABLE);
              stmt.executeUpdate(SQLCreator.SQL_CREATE_USER_SETTINGS_TABLE);
 
              // Channels
@@ -100,7 +102,7 @@ public class SQLProcessor implements LogColorFormatter {
                 dbEngine.add(
                     "users",
                     String.format(
-                        "%d, %s, \"%s\", %s, \"%s\", NULL, NULL, NULL",
+                        "%d, %s, \"%s\", %s, \"%s\", NULL, NULL, NULL, NULL, NULL, NULL",
                         tgUser.getId(),
                         tgUser.getUserName() == null ? "NULL" : String.format("\"%s\"", tgUser.getUserName()),
                         tgUser.getFirstName(),
@@ -116,7 +118,7 @@ public class SQLProcessor implements LogColorFormatter {
                 dbEngine.add(
                     "user_settings",
                     String.format(
-                        "%d, %s, 180, FALSE",
+                        "%d, %s, 180, FALSE, TRUE",
                         tgUser.getId(),
                         tgUser.getLanguageCode() == null ? "NULL" : String.format("\"%s\"", tgUser.getLanguageCode())
                     )
