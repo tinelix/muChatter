@@ -20,7 +20,8 @@ public class SQLCreator {
             "city VARCHAR(40), " +
             "irc_nickname VARCHAR(30), " +
             "xmpp_address VARCHAR(255), " +
-            "matrix_address VARCHAR(255) " +
+            "matrix_address VARCHAR(255), " +
+            "ovk_address VARCHAR(255)" +
         ")";
 
     public static final String SQL_CREATE_USER_BLOCKLISTS_TABLE = "" +

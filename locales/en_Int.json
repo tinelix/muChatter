@@ -9,13 +9,16 @@
     },
 
     "muchatter_l10n_arrays": {
-        "on_off": ["Enabled", "Disabled"],
-        "user_settings_list": ["User Rating", "Timezone"],
+        "on_off":             ["On", "Off"],
+        "user_settings_list": ["User Rank", "Timezone", "Reputation"],
     },
 
     "muchatter_l10n_plurals": {
-        "users": ["user", "users", "users"],
-        "members": ["member", "members", "members"],
-        "scores": ["score", "scores"]
+        "users":   ["user",    "users",   "users"],
+        "members": ["member",  "members", "members"],
+        "scores":  ["score",   "scores",  "scores"],
+        "hours":   ["hour",    "hours",   "hours"],
+        "minutes": ["minute",  "minutes", "minutes"],
+        "seconds": ["second",  "seconds", "seconds"]
     }
 }

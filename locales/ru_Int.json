@@ -1,10 +1,25 @@
 {
-    "muchatter_lang_code":   "ru",
+    "muchatter_lang_code":   "ru_Int",
     "muchatter_lang_name":   "Русский",
     "muchatter_l10n_ver":    "v0.0.1",
     "muchatter_l10n_author": "Dmitry Tretyakov (tretdm)",
 
     "muchatter_l10n_strings": {
         "greetings": "Привет, %s. Меня зовут μChatter (мьюЧаттер) - ваш незаменимый помощник в чатах.\r\n\r\nБот находится в режиме альфа-тестирования, поэтому мы рекомендуем зайти на канал @tinelix для обновлений."
+    },
+
+    "muchatter_l10n_arrays": {
+        "on_off":             ["Вкл.", "Выкл."],
+        "user_settings_list": ["Ранг пользователей", "Часовой пояс", "Репутация"],
+        "profile_forms":      ["Интересы", "Любимые занятия", "Населенный пункт", "Никнейм в IRC", "Никнейм в Matrix", "Профиль в OpenVK\*"]
+    },
+
+    "muchatter_l10n_plurals": {
+        "users":   ["пользователь", "пользователя", "пользователей"],
+        "members": ["участник",     "участника",    "участников"],
+        "scores":  ["очко",         "очка",         "очков"],
+        "hours":   ["час",          "часа",         "часов"],
+        "minutes": ["минута",       "минуты",       "минут"],
+        "seconds": ["секунда",      "секунды",      "секунд"]
     }
 }

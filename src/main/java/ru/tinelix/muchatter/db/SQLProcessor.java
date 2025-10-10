@@ -102,7 +102,7 @@ public class SQLProcessor implements LogColorFormatter {
                 dbEngine.add(
                     "users",
                     String.format(
-                        "%d, %s, \"%s\", %s, \"%s\", NULL, NULL, NULL, NULL, NULL, NULL",
+                        "%d, %s, \"%s\", %s, \"%s\", NULL, NULL, NULL, NULL, NULL, NULL, NULL",
                         tgUser.getId(),
                         tgUser.getUserName() == null ? "NULL" : String.format("\"%s\"", tgUser.getUserName()),
                         tgUser.getFirstName(),
