@@ -25,7 +25,7 @@ public class BotApplication {
 		
 			app.registerBot(bot.getBotToken(), bot);
 		
-			System.out.println("muChatter successfully started!\r\n");
+			bot.onSuccess("muChatter successfully started!");
 		
 			Thread.currentThread().join();
 		} catch(Exception ex) {

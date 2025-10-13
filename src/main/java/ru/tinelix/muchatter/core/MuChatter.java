@@ -2,6 +2,7 @@ package ru.tinelix.muchatter.core;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.Thread;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -9,7 +10,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.nio.file.*;
 
-import com.ea.async.Async;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.objects.chat.Chat;
@@ -19,9 +19,11 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import ru.tinelix.muchatter.bridges.IRCBridge;
 import ru.tinelix.muchatter.core.interfaces.LogColorFormatter;
 import ru.tinelix.muchatter.core.BotCommand;
 import ru.tinelix.muchatter.db.DatabaseEngine;
+
 
 public class MuChatter implements LongPollingSingleThreadUpdateConsumer, LogColorFormatter {
 		
@@ -49,19 +51,29 @@ public class MuChatter implements LongPollingSingleThreadUpdateConsumer, LogColo
 
 	public ChatterConfig mConfig;
 
-	public TelegramClient mClient;
+	private TelegramClient 	mClient;
+	private IRCBridge 		mIRCBridge;
+	private Thread			mIRCThread;
 
 	private DatabaseEngine mDatabase;
 		
 	public MuChatter() {
 			this.mConfig = new ChatterConfig();
+
 			try {
 				FileInputStream inputStream = new FileInputStream("config/bot.json");
 				ObjectMapper mapper = new ObjectMapper();
+
 				mConfig = mapper.readValue(
 					inputStream, ChatterConfig.class
 				);
 				mClient = new OkHttpTelegramClient(getBotToken());
+
+				mIRCBridge = new IRCBridge(mConfig, this);
+				mIRCThread = new Thread(mIRCBridge);
+
+				mIRCThread.setDaemon(true);
+				mIRCThread.start();
 
 				mDatabase = new DatabaseEngine();
 				mDatabase.connect();
@@ -84,8 +96,12 @@ public class MuChatter implements LongPollingSingleThreadUpdateConsumer, LogColo
 		return mConfig.bot_username;
 	}
 
-	public TelegramClient getClient() {
+	public TelegramClient getTelegramClient() {
 		return mClient;
+	}
+
+	public String getIRCNickname() {
+		return mConfig.use_irc_bridge ? null : mConfig.irc_nickname;
 	}
 		
 	@Override
@@ -132,6 +148,7 @@ public class MuChatter implements LongPollingSingleThreadUpdateConsumer, LogColo
 	public void consume(Update update) {
 		// We check if the update has a message and the message has text
 		if (update.hasMessage() && update.getMessage().hasText()) {
+
 			User tgFrom = update.getMessage().getFrom();
 			Chat tgChat = update.getMessage().getChat();
 

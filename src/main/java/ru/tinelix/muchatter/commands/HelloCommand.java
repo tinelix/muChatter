@@ -36,7 +36,6 @@ public class HelloCommand extends BotCommand {
         locale_args.add(mTgFrom.getFirstName());
 
         try {
-
             SQLProcessor.registerUserIntoDb(mChatter, mDatabase, mTgChat, mTgFrom);
 
             ResultSet userDbResult = SQLProcessor.getUserFromDb(mChatter, mDatabase, mTgFrom, "settings");
@@ -46,7 +45,7 @@ public class HelloCommand extends BotCommand {
                 Locale.translate(userDbResult.getString("ui_language"), "greetings", locale_args)
             );
 
-            mChatter.mClient.execute(message);
+            mChatter.getTelegramClient().execute(message);
         } catch (Exception e) {
             mChatter.onError(e.getMessage());
             e.printStackTrace();

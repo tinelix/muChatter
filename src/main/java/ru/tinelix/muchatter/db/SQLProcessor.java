@@ -97,7 +97,7 @@ public class SQLProcessor implements LogColorFormatter {
                                             .chatId(tgChat.getId())
                                             .build();
 
-                ChatFullInfo chatInfo = chatter.mClient.execute(chatInfoApi);
+                ChatFullInfo chatInfo = chatter.getTelegramClient().execute(chatInfoApi);
 
                 dbEngine.add(
                     "users",
@@ -107,9 +107,12 @@ public class SQLProcessor implements LogColorFormatter {
                         tgUser.getUserName() == null ? "NULL" : String.format("\"%s\"", tgUser.getUserName()),
                         tgUser.getFirstName(),
                         tgUser.getLastName() == null ? "NULL" : String.format("\"%s\"", tgUser.getLastName()),
-                        "1800-01-01",
-                        "1800-01-01",
-                        "1800-01-01"
+                        chatInfo.getBirthdate() == null ?
+                            "1800-01-01" : String.format("%d-%02d-%02d",
+                                                         chatInfo.getBirthdate().getYear() == null ? "1800" : chatInfo.getBirthdate().getYear(),
+                                                         chatInfo.getBirthdate().getMonth(),
+                                                         chatInfo.getBirthdate().getDay()
+                                           )
                     )
                 );
             }

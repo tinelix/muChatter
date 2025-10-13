@@ -128,18 +128,38 @@ public class Locale {
                 }
             }
 
+        } catch(IOException ex) {}
+
+        return String.format("[%s|arr[%d]|%s]", langCode, index, resId);
+    }
+
+    public static int getLocaleArrayLength(String langCode, String resId) {
+        if(!langCode.contains("_"))
+            langCode += "_Int";
+
+        String localeFileName = String.format("locales/%s.json", langCode);
+
+        try {
+        File f = new File(localeFileName);
+
+            if (!f.exists()) return 0;
+
+            InputStream is = new FileInputStream(localeFileName);
+            String jsonTxt = IOUtils.toString(is, "UTF-8");
+
+            JSONObject json = new JSONObject(jsonTxt);
+
             if(json.has("muchatter_l10n_arrays")) {
-                JSONObject arrays = (JSONObject) json.get("muchatter_l10n_arrays");
+                JSONObject arrays =  (JSONObject) json.get("muchatter_l10n_arrays");
 
                 if(arrays.has(resId) && !arrays.isNull(resId)) {
                     JSONArray array = (JSONArray) arrays.get(resId);
-
-                    return String.format((String) array.get(index), args.toArray());
+                    return array.length();
                 }
             }
 
         } catch(IOException ex) {}
 
-        return String.format("[%s|arr[%d]|%s]", langCode, index, resId);
+        return 0;
     }
 }

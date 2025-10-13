@@ -6,11 +6,15 @@
 
     "muchatter_l10n_strings": {
         "greetings": "Hi, %s. My name is μChatter (muChatter) - is your indispensable companion in chats.\r\n\r\nThe bot is currently in alpha testing, so we recommend checking out the @tinelix channel for updates.",
+        "ovk_disclaimer": "* OpenVK social network not affiliated in any way with VKontakte and VK LLC.",
+        "not_specified": "[Not specified]"
     },
 
     "muchatter_l10n_arrays": {
         "on_off":             ["On", "Off"],
         "user_settings_list": ["User Rank", "Timezone", "Reputation"],
+        "profile_forms":      ["Birthdate", "Interests", "Hobbys", "Location", "IRC nickname", "Matrix address", "OpenVK profile*"],
+        "profile_buttons":    ["🖍️ Edit"]
     },
 
     "muchatter_l10n_plurals": {

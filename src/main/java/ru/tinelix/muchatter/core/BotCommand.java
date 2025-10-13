@@ -83,7 +83,7 @@ public class BotCommand {
             "BotCommand class test!"
         );
         try {
-            mChatter.mClient.execute(message);
+            mChatter.getTelegramClient().execute(message);
         } catch (TelegramApiException e) {
             mChatter.onError(e.getMessage());
         }

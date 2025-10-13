@@ -6,6 +6,7 @@ import java.lang.Object;
 import java.lang.reflect.Field;
 
 import ru.tinelix.muchatter.commands.HelloCommand;
+import ru.tinelix.muchatter.commands.ProfileCommand;
 
 import ru.tinelix.muchatter.core.BotCommand;
 import ru.tinelix.muchatter.core.MuChatter;
@@ -51,8 +52,9 @@ public class CommandSearch {
     public static HashMap<String, String> getCommandNames() {
         HashMap<String, String> commands = new HashMap<String, String>();
 
-        commands.put("/start", HelloCommand.COMMAND_NAME);
-        commands.put("/hello", HelloCommand.COMMAND_NAME);
+        commands.put("/start",      HelloCommand.COMMAND_NAME);
+        commands.put("/hello",      HelloCommand.COMMAND_NAME);
+        commands.put("/profile",    ProfileCommand.COMMAND_NAME);
 
         return commands;
     }
