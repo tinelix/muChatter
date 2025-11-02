@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
@@ -85,18 +86,21 @@ public class DatabaseEngine implements LogColorFormatter {
 	}
 
 	protected PreparedStatement escapeSQLValues(
-		PreparedStatement pstmt, ArrayList<Object> values
+		PreparedStatement pstmt, LinkedHashMap<String, Object> values
 	) throws SQLException {
 		for(int i = 0; i < values.size(); i++) {
-			if(values.get(i) instanceof String) {
-				pstmt.setString(i, (String)values.get(i));
-			} else if(values.get(i) instanceof Integer) {
-				pstmt.setInt(i, (Integer)values.get(i));
-			} else if(values.get(i) instanceof Long) {
-				pstmt.setLong(i, (Long)values.get(i));
-			} else if(values.get(i) instanceof Boolean) {
-				pstmt.setBoolean(i, (Boolean)values.get(i));
-			}
+			String key = values.keySet().toArray()[i].toString();
+
+			if(values.get(key) == null)
+				pstmt.setNull(i + 1, Types.VARCHAR);
+			else if(values.get(key) instanceof String)
+				pstmt.setString(i + 1, (String)values.get(key));
+			else if(values.get(key) instanceof Integer)
+				pstmt.setInt(i + 1, (Integer)values.get(key));
+			else if(values.get(key) instanceof Long)
+				pstmt.setLong(i + 1, (Long)values.get(key));
+			else if(values.get(key) instanceof Boolean)
+				pstmt.setBoolean(i + 1, (Boolean)values.get(key));
         }
 
         return pstmt;
@@ -105,14 +109,16 @@ public class DatabaseEngine implements LogColorFormatter {
 	protected PreparedStatement escapeSQLValue(
 		PreparedStatement pstmt, Object value
 	) throws SQLException {
-		if(value instanceof String) {
-			pstmt.setString(0, (String)value);
+		if(value == null)
+			pstmt.setNull(1, Types.VARCHAR);
+		else if(value instanceof String) {
+			pstmt.setString(1, (String)value);
 		} else if(value instanceof Integer) {
-			pstmt.setInt(0, (Integer)value);
+			pstmt.setInt(1, (Integer)value);
 		} else if(value instanceof Long) {
-			pstmt.setLong(0, (Long)value);
+			pstmt.setLong(1, (Long)value);
 		} else if(value instanceof Boolean) {
-			pstmt.setBoolean(0, (Boolean)value);
+			pstmt.setBoolean(1, (Boolean)value);
 		}
 
         return pstmt;
@@ -252,13 +258,23 @@ public class DatabaseEngine implements LogColorFormatter {
         return pstmt.executeQuery();
     }
     
-    public boolean add(String table, ArrayList<Object> values) throws SQLException {
+    public boolean add(String table, LinkedHashMap<String, Object> values) throws SQLException {
         if (values != null && values.size() == 0) {
             return false;
         }
 
 		StringBuilder query = new StringBuilder("INSERT INTO ");
-		query.append(table).append(" VALUES (");
+		query.append(table).append("(");
+
+		for(int i = 0; i < values.keySet().size(); i++) {
+			if(i < values.keySet().size() - 1) {
+				query.append("" + values.keySet().toArray()[i] + ", ");
+			} else {
+				query.append(values.keySet().toArray()[i]);
+			}
+		}
+
+		query.append(") VALUES (");
 
 		for(int i = 0; i < values.size(); i++) {
 			if(i < values.size() - 1)
@@ -268,10 +284,12 @@ public class DatabaseEngine implements LogColorFormatter {
 		}
 
 		query.append(");");
-        
+
+		onInfo("SQL Query Mask: " + query);
+
         PreparedStatement pstmt = conn.prepareStatement(query.toString());
 
-        escapeSQLValues(pstmt, values);
+        pstmt = escapeSQLValues(pstmt, values);
         
         return pstmt.executeUpdate() > 0;
     }
@@ -287,7 +305,7 @@ public class DatabaseEngine implements LogColorFormatter {
 
         PreparedStatement pstmt = conn.prepareStatement(query.toString());
 
-        escapeSQLValue(pstmt, value);
+        pstmt = escapeSQLValue(pstmt, value);
 
         return pstmt.executeUpdate() > 0;
     }

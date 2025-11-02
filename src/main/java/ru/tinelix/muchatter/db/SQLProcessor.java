@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import org.telegram.telegrambots.meta.api.objects.chat.Chat;
 import org.telegram.telegrambots.meta.api.objects.chat.ChatFullInfo;
@@ -97,16 +98,15 @@ public class SQLProcessor implements LogColorFormatter {
                                             .chatId(tgChat.getId())
                                             .build();
 
-                ArrayList<Object> values = new ArrayList<Object>();
+                LinkedHashMap<String, Object> values = new LinkedHashMap<>();
 
                 ChatFullInfo chatInfo = chatter.getTelegramClient().execute(chatInfoApi);
 
-                values.add(0, tgUser.getId());
-                values.add(1, tgUser.getUserName());
-                values.add(2, tgUser.getUserName());
-                values.add(3, tgUser.getFirstName());
-                values.add(4, tgUser.getLastName());
-                values.add(5, chatInfo.getBirthdate() == null ?
+                values.put("tg_user_id",  tgUser.getId());
+                values.put("tg_nickname", tgUser.getUserName());
+                values.put("first_name",  tgUser.getUserName());
+                values.put("last_name",   tgUser.getFirstName());
+                values.put("birth_date",  chatInfo.getBirthdate() == null ?
                            "1800-01-01" : String.format("%d-%02d-%02d",
                                                         chatInfo.getBirthdate().getYear() == null ?
                                                                 "1800" : chatInfo.getBirthdate().getYear(),
@@ -115,17 +115,18 @@ public class SQLProcessor implements LogColorFormatter {
                                           )
                           );
 
+                values.put("interests", null);
                 dbEngine.add("users", values);
             }
 
             if(!dbEngine.ifExist("user_settings", "tg_user_id", tgUser.getId())) {
-                ArrayList<Object> values = new ArrayList<Object>();
+                LinkedHashMap<String, Object> values = new LinkedHashMap<>();
 
-                values.add(0, tgUser.getId());
-                values.add(1, tgUser.getLanguageCode());
-                values.add(2, 180);
-                values.add(3, false);
-                values.add(4, true);
+                values.put("tg_user_id", tgUser.getId());
+                values.put("ui_language", tgUser.getLanguageCode());
+                values.put("timezone", 180);
+                values.put("levels", false);
+                values.put("reps", true);
 
                 dbEngine.add("user_settings", values);
             }

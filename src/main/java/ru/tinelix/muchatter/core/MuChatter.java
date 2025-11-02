@@ -106,7 +106,7 @@ public class MuChatter implements LongPollingSingleThreadUpdateConsumer, LogColo
 	}
 
 	public BotCallback getTemporaryCallback(Chat tgChat) {
-		if(mBotCallbackMap.containsKey(tgChat.getId()))
+		if(mBotCallbackMap != null && mBotCallbackMap.containsKey(tgChat.getId()))
 			return mBotCallbackMap.get(tgChat.getId());
 		else
 			return null;
