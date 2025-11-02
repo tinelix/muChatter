@@ -7,14 +7,17 @@
     "muchatter_l10n_strings": {
         "greetings": "Hi, %s. My name is μChatter (muChatter) - is your indispensable companion in chats.\r\n\r\nThe bot is currently in alpha testing, so we recommend checking out the @tinelix channel for updates.",
         "ovk_disclaimer": "* OpenVK social network not affiliated in any way with VKontakte and VK LLC.",
-        "not_specified": "[Not specified]"
+        "profile_info_title": "about user",
+        "profile_edit_areas": "To fill in or change your information, click one of the buttons below.\r\n\r\nPlease note that some fields are pre-populated based on your Telegram account's public data and may be subject to change depending on your privacy settings.",
+        "profile_edit_areas_2": "Enter your details in the selected <B>%s</B> field. When you're finished, submit directly there.",
+        "not_specified": "[Not specified]",
     },
 
     "muchatter_l10n_arrays": {
         "on_off":             ["On", "Off"],
         "user_settings_list": ["User Rank", "Timezone", "Reputation"],
-        "profile_forms":      ["Birthdate", "Interests", "Hobbys", "Location", "IRC nickname", "Matrix address", "OpenVK profile*"],
-        "profile_buttons":    ["🖍️ Edit"]
+        "profile_forms":      ["📅 Birthdate", "🧠 Interests", "⚽ Hobbys", "📍 Location", "💬 IRC nickname", "🧑‍💻 Matrix address", "🐕 OpenVK profile*"],
+        "profile_buttons":    ["🖍️ Edit", "🖍️ Fill"]
     },
 
     "muchatter_l10n_plurals": {
@@ -24,5 +27,26 @@
         "hours":   ["hour",    "hours",   "hours"],
         "minutes": ["minute",  "minutes", "minutes"],
         "seconds": ["second",  "seconds", "seconds"]
+    },
+
+    "muchatter_l10n_regional": {
+        "12hr": ["AM", "PM"],
+        "time": {
+            "full_v1":  "%d %s, %d %s, %d %s, %d %s",
+            "full_v2":  "%d %s, %d %s, %d %s",
+            "full_v3":  "%d %s, %d %s",
+            "full_v4":  "%d %s",
+            "short_v1": "%d:%2d:%2d:%2d",
+            "short_v2": "%d:%2d:%2d",
+            "short_v3": "%d:%2d:%2d %s",
+            "short_v4": "%d:%2d",
+            "short_v5": "%d:%2d %s"
+        },
+        "date": {
+            "full_v1":  "%s %d, %d",
+            "full_v2":  "%d %s",
+            "short_v1": "%d-%2d-%2d",
+            "short_v2": "%2d-%2d"
+        }
     }
 }

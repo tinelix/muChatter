@@ -52,4 +52,8 @@ public class HelloCommand extends BotCommand {
         }
     }
 
+    public void update(long msgId) {
+
+    }
+
 }

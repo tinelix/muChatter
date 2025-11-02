@@ -83,7 +83,41 @@ public class DatabaseEngine implements LogColorFormatter {
         }
         return 0;
 	}
-	
+
+	protected PreparedStatement escapeSQLValues(
+		PreparedStatement pstmt, ArrayList<Object> values
+	) throws SQLException {
+		for(int i = 0; i < values.size(); i++) {
+			if(values.get(i) instanceof String) {
+				pstmt.setString(i, (String)values.get(i));
+			} else if(values.get(i) instanceof Integer) {
+				pstmt.setInt(i, (Integer)values.get(i));
+			} else if(values.get(i) instanceof Long) {
+				pstmt.setLong(i, (Long)values.get(i));
+			} else if(values.get(i) instanceof Boolean) {
+				pstmt.setBoolean(i, (Boolean)values.get(i));
+			}
+        }
+
+        return pstmt;
+	}
+
+	protected PreparedStatement escapeSQLValue(
+		PreparedStatement pstmt, Object value
+	) throws SQLException {
+		if(value instanceof String) {
+			pstmt.setString(0, (String)value);
+		} else if(value instanceof Integer) {
+			pstmt.setInt(0, (Integer)value);
+		} else if(value instanceof Long) {
+			pstmt.setLong(0, (Long)value);
+		} else if(value instanceof Boolean) {
+			pstmt.setBoolean(0, (Boolean)value);
+		}
+
+        return pstmt;
+	}
+
 	public boolean ifExist(String table, int id) {
 		int sql_conn = checkSQLConnection();
 		if(sql_conn < 0)
@@ -123,6 +157,8 @@ public class DatabaseEngine implements LogColorFormatter {
             onError("Invalid table name provided for ifExist function.");
             return false;
         }
+
+        column = column.replace("\"", "\"\"");
         
         String safeTableName = table.replace("\"", "\"\"");
         
@@ -155,11 +191,11 @@ public class DatabaseEngine implements LogColorFormatter {
             return false;
         }
 
-        String safeTableName = table.replace("\"", "\"\"");
+        String safeTableName = table.replace("\"", "").replace("'", "");
 
         String sqlIfExist = "" +
 			"SELECT EXISTS(SELECT 1 FROM " + safeTableName +
-			" WHERE " + column + " = ?)";
+			" WHERE " + column.replace("\"", "").replace("'", "") + " = ?)";
 
 		try (PreparedStatement pstmt = conn.prepareStatement(sqlIfExist)) {
 			pstmt.setLong(1, value);
@@ -201,8 +237,6 @@ public class DatabaseEngine implements LogColorFormatter {
             query.append(" WHERE ").append(whereClause);
         }
         if (!orderByClause.trim().isEmpty()) {
-        	orderByClause = orderByClause.replace("'","").replace("\"", "");	
-        	
 			String[] orderSplitted = orderByClause.split("_");
 			if(orderSplitted.length > 1) {
 				query.append(" ORDER BY ").append(orderSplitted[0]);
@@ -218,18 +252,43 @@ public class DatabaseEngine implements LogColorFormatter {
         return pstmt.executeQuery();
     }
     
-    public boolean add(String table, String values) throws SQLException {
-		
-        StringBuilder query = new StringBuilder("INSERT INTO ");
-        query.append(table).append(" VALUES (").append(values).append(");");
-        
-        if (values.isEmpty()) {
+    public boolean add(String table, ArrayList<Object> values) throws SQLException {
+        if (values != null && values.size() == 0) {
             return false;
         }
+
+		StringBuilder query = new StringBuilder("INSERT INTO ");
+		query.append(table).append(" VALUES (");
+
+		for(int i = 0; i < values.size(); i++) {
+			if(i < values.size() - 1)
+				query.append("?, ");
+			else
+				query.append("?");
+		}
+
+		query.append(");");
         
-        onInfo(query.toString());
         PreparedStatement pstmt = conn.prepareStatement(query.toString());
+
+        escapeSQLValues(pstmt, values);
         
+        return pstmt.executeUpdate() > 0;
+    }
+
+    public boolean update(String table, String column, Object value) throws SQLException {
+        if (value != null) {
+            return false;
+        }
+
+		StringBuilder query = new StringBuilder("UPDATE ");
+		query.append(table).append(" SET ")
+		     .append(column).append(" = ?;");
+
+        PreparedStatement pstmt = conn.prepareStatement(query.toString());
+
+        escapeSQLValue(pstmt, value);
+
         return pstmt.executeUpdate() > 0;
     }
     
@@ -301,8 +360,7 @@ public class DatabaseEngine implements LogColorFormatter {
 						sqlClause.append("LOWER(" + entry.getKey() + ") = ");
 						
 						sqlClause.append("LOWER(\'" + 
-							((String)entry.getValue())
-								.replace("'", "").replace("\"", "") 
+							(String)entry.getValue()
 							+ "\')"
 						);	
 					}
@@ -324,7 +382,7 @@ public class DatabaseEngine implements LogColorFormatter {
 							sqlClause.append(", ");
 							
 						sqlClause.append(
-							"'" + ((String)entry.getValue()).replace("'", "").replace("\"", "") + "'"
+							"'" + ((String)entry.getValue()) + "'"
 						); 
 					} else if(entry.getValue() instanceof Boolean) {
 						if(map_count > 0) 

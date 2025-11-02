@@ -5,6 +5,7 @@ import java.util.HashMap;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.chat.Chat;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -58,6 +59,22 @@ public class BotCommand {
         return cmd;
     }
 
+    public static BotCommand resolveByCallback(
+        MuChatter chatter,
+        DatabaseEngine dbEngine,
+        Chat tgChat,
+        User tgFrom,
+        String cbData
+    ) {
+
+        BotCommand cmd = CommandSearch.findByCallback(chatter, dbEngine, cbData);
+
+        if(cmd != null)
+            cmd.parse(tgChat, tgFrom, cbData);
+
+        return cmd;
+    }
+
     protected void parse(Chat tgChat, User tgFrom, String msgText) {
         // Getting Telegram chat info
         mTgChat = tgChat;
@@ -89,6 +106,18 @@ public class BotCommand {
         }
     }
 
+    protected void runFromCallback(String msgText) {
+        SendMessage message = new SendMessage(
+            Long.toString(mTgChat.getId()),
+            "BotCommand class test!"
+        );
+        try {
+            mChatter.getTelegramClient().execute(message);
+        } catch (TelegramApiException e) {
+            mChatter.onError(e.getMessage());
+        }
+    }
+
     public static HashMap<String, String> getInformation() {
         HashMap<String, String> info = new HashMap<String, String>();
 
@@ -98,5 +127,16 @@ public class BotCommand {
         info.put("av_rights", "Available rights placeholder");
 
         return info;
+    }
+
+    protected InlineKeyboardButton createInlineButton(String text, String callbackData) {
+        return InlineKeyboardButton.builder()
+                .text(text)
+                .callbackData(callbackData)
+                .build();
+    }
+
+    protected void update(long msgId) {
+
     }
 }

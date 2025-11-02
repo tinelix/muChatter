@@ -3,12 +3,13 @@ package ru.tinelix.muchatter.core;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.Thread;
+import java.nio.file.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.nio.file.*;
+import java.util.HashMap;
 
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
@@ -51,9 +52,10 @@ public class MuChatter implements LongPollingSingleThreadUpdateConsumer, LogColo
 
 	public ChatterConfig mConfig;
 
-	private TelegramClient 	mClient;
-	private IRCBridge 		mIRCBridge;
-	private Thread			mIRCThread;
+	private TelegramClient 				mClient;
+	private IRCBridge 					mIRCBridge;
+	private Thread						mIRCThread;
+	private HashMap<Long, BotCallback>	mBotCallbackMap;
 
 	private DatabaseEngine mDatabase;
 		
@@ -94,6 +96,24 @@ public class MuChatter implements LongPollingSingleThreadUpdateConsumer, LogColo
 		
 	public String getBotUsername() {
 		return mConfig.bot_username;
+	}
+
+	public void makeTemporaryCallback(String name, Chat tgChat, User tgFrom) {
+		if(mBotCallbackMap == null)
+			mBotCallbackMap = new HashMap<>();
+
+		mBotCallbackMap.put(tgChat.getId(), new BotCallback(name, tgChat, tgFrom));
+	}
+
+	public BotCallback getTemporaryCallback(Chat tgChat) {
+		if(mBotCallbackMap.containsKey(tgChat.getId()))
+			return mBotCallbackMap.get(tgChat.getId());
+		else
+			return null;
+	}
+
+	public void removeTemporaryCallback(String name, Chat tgChat, User tgFrom) {
+		mBotCallbackMap.remove(tgChat.getId());
 	}
 
 	public TelegramClient getTelegramClient() {
@@ -149,15 +169,59 @@ public class MuChatter implements LongPollingSingleThreadUpdateConsumer, LogColo
 		// We check if the update has a message and the message has text
 		if (update.hasMessage() && update.getMessage().hasText()) {
 
-			User tgFrom = update.getMessage().getFrom();
-			Chat tgChat = update.getMessage().getChat();
+			User 	tgFrom     = update.getMessage().getFrom();
+			Chat 	tgChat     = update.getMessage().getChat();
+			String  tgMsgText  = update.getMessage().getText();
 
-			BotCommand command = BotCommand.resolve(
-				this, mDatabase, tgChat, tgFrom, update.getMessage().getText()
+			BotCallback callback = getTemporaryCallback(tgChat);
+
+			if(callback != null) {
+				BotCommand command = BotCommand.resolveByCallback(
+					this, mDatabase, tgChat, tgFrom, callback.getName()
+				);
+
+				if(command != null)
+					command.runFromCallback(tgMsgText);
+			} else {
+				BotCommand command = BotCommand.resolve(
+					this, mDatabase, tgChat, tgFrom, tgMsgText
+				);
+
+				if(command != null)
+					command.run();
+			}
+		} else if (update.hasCallbackQuery()) {
+			User tgFrom   = update.getCallbackQuery().getFrom();
+			Chat tgChat   = update.getCallbackQuery().getMessage().getChat();
+			long msgId    = update.getCallbackQuery().getMessage().getMessageId();
+			String cbData = update.getCallbackQuery().getData();
+
+			BotCommand command = BotCommand.resolveByCallback(
+				this, mDatabase, tgChat, tgFrom, cbData
 			);
 
 			if(command != null)
-				command.run();
+				command.update(msgId);
+		}
+	}
+
+	public class BotCallback {
+		private User mTgFrom;
+		private Chat mTgChat;
+		private String mName;
+
+		public BotCallback(String name, Chat tgChat, User tgFrom) {
+			this.mName = name;
+			this.mTgFrom = tgFrom;
+			this.mTgChat = tgChat;
+		}
+
+		protected String getName() {
+			return this.mName;
+		}
+
+		protected User getFrom() {
+			return this.mTgFrom;
 		}
 	}
 }

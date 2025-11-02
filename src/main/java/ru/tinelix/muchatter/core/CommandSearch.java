@@ -23,6 +23,15 @@ public class CommandSearch {
         return null;
     }
 
+    public static BotCommand findByCallback(MuChatter chatter, DatabaseEngine dbEngine, String cbData) {
+        if(CommandSearch.getCallbacks().containsKey(cbData.split("_")[0])) {
+            String cmdName = CommandSearch.getCallbacks().get(cbData.split("_")[0]);
+            return loadCommand(cmdName, dbEngine, chatter);
+        }
+
+        return null;
+    }
+
     public static BotCommand loadCommand(String cmdName, DatabaseEngine dbEngine, MuChatter chatter) {
         try {
             Class<?> clazz = Class.forName(
@@ -55,6 +64,15 @@ public class CommandSearch {
         commands.put("/start",      HelloCommand.COMMAND_NAME);
         commands.put("/hello",      HelloCommand.COMMAND_NAME);
         commands.put("/profile",    ProfileCommand.COMMAND_NAME);
+
+        return commands;
+    }
+
+    public static HashMap<String, String> getCallbacks() {
+        HashMap<String, String> commands = new HashMap<String, String>();
+
+        commands.put(ProfileCommand.EDIT_PROFILE_CALLBACK,          ProfileCommand.COMMAND_NAME);
+        commands.put(ProfileCommand.FILL_PROFILE_TEXTAREA_CALLBACK, ProfileCommand.COMMAND_NAME);
 
         return commands;
     }

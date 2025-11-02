@@ -97,35 +97,37 @@ public class SQLProcessor implements LogColorFormatter {
                                             .chatId(tgChat.getId())
                                             .build();
 
+                ArrayList<Object> values = new ArrayList<Object>();
+
                 ChatFullInfo chatInfo = chatter.getTelegramClient().execute(chatInfoApi);
 
-                dbEngine.add(
-                    "users",
-                    String.format(
-                        "%d, %s, \"%s\", %s, \"%s\", NULL, NULL, NULL, NULL, NULL, NULL, NULL",
-                        tgUser.getId(),
-                        tgUser.getUserName() == null ? "NULL" : String.format("\"%s\"", tgUser.getUserName()),
-                        tgUser.getFirstName(),
-                        tgUser.getLastName() == null ? "NULL" : String.format("\"%s\"", tgUser.getLastName()),
-                        chatInfo.getBirthdate() == null ?
-                            "1800-01-01" : String.format("%d-%02d-%02d",
-                                                         chatInfo.getBirthdate().getYear() == null ? "1800" : chatInfo.getBirthdate().getYear(),
-                                                         chatInfo.getBirthdate().getMonth(),
-                                                         chatInfo.getBirthdate().getDay()
-                                           )
-                    )
-                );
+                values.add(0, tgUser.getId());
+                values.add(1, tgUser.getUserName());
+                values.add(2, tgUser.getUserName());
+                values.add(3, tgUser.getFirstName());
+                values.add(4, tgUser.getLastName());
+                values.add(5, chatInfo.getBirthdate() == null ?
+                           "1800-01-01" : String.format("%d-%02d-%02d",
+                                                        chatInfo.getBirthdate().getYear() == null ?
+                                                                "1800" : chatInfo.getBirthdate().getYear(),
+                                                        chatInfo.getBirthdate().getMonth(),
+                                                        chatInfo.getBirthdate().getDay()
+                                          )
+                          );
+
+                dbEngine.add("users", values);
             }
 
             if(!dbEngine.ifExist("user_settings", "tg_user_id", tgUser.getId())) {
-                dbEngine.add(
-                    "user_settings",
-                    String.format(
-                        "%d, %s, 180, FALSE, TRUE",
-                        tgUser.getId(),
-                        tgUser.getLanguageCode() == null ? "NULL" : String.format("\"%s\"", tgUser.getLanguageCode())
-                    )
-                );
+                ArrayList<Object> values = new ArrayList<Object>();
+
+                values.add(0, tgUser.getId());
+                values.add(1, tgUser.getLanguageCode());
+                values.add(2, 180);
+                values.add(3, false);
+                values.add(4, true);
+
+                dbEngine.add("user_settings", values);
             }
         } catch (Exception e) {
             e.printStackTrace();
