@@ -59,6 +59,7 @@ public class DatabaseEngine implements LogColorFormatter {
             conn = DriverManager.getConnection(
 				config.sql_addr, config.username, config.password
 			);
+			conn.setAutoCommit(true);
 			onSuccess("Database connected successfully.");
 
 			sql_proc = new SQLProcessor(this);
@@ -124,7 +125,25 @@ public class DatabaseEngine implements LogColorFormatter {
         return pstmt;
 	}
 
-	public boolean ifExist(String table, int id) {
+	protected PreparedStatement escapeSQLValue(
+		PreparedStatement pstmt, int index, Object value
+	) throws SQLException {
+		if(value == null)
+			pstmt.setNull(index + 1, Types.VARCHAR);
+		else if(value instanceof String) {
+			pstmt.setString(index + 1, (String)value);
+		} else if(value instanceof Integer) {
+			pstmt.setInt(index + 1, (Integer)value);
+		} else if(value instanceof Long) {
+			pstmt.setLong(index + 1, (Long)value);
+		} else if(value instanceof Boolean) {
+			pstmt.setBoolean(index + 1, (Boolean)value);
+		}
+
+        return pstmt;
+	}
+
+	public boolean ifExist(String table, String column, int value) {
 		int sql_conn = checkSQLConnection();
 		if(sql_conn < 0)
 			return false;
@@ -134,13 +153,18 @@ public class DatabaseEngine implements LogColorFormatter {
             return false;
         }
         
-        String safeTableName = '"' + table.replace("\"", "\"\"") + '"';
+        String safeTableName = table.replace("\"", "\"\"")
+									.replace("=", "").replace(" ", "");
+
+        String safeColumnName = column.replace("\"", "\"\"")
+									.replace("=", "").replace(" ", "");
         
         String sqlIfExist = "" +
-			"SELECT EXISTS(SELECT 1 FROM " + safeTableName + " WHERE id = ?)";
+			"SELECT EXISTS(SELECT 1 FROM " + safeTableName + " WHERE " +
+			safeColumnName + " = ?)";
 
 		try (PreparedStatement pstmt = conn.prepareStatement(sqlIfExist)) {
-			pstmt.setInt(1, id);
+			pstmt.setInt(1, value);
 			ResultSet rs = pstmt.executeQuery();
 			if (rs.next()) {
 				return rs.getBoolean(1);
@@ -166,11 +190,15 @@ public class DatabaseEngine implements LogColorFormatter {
 
         column = column.replace("\"", "\"\"");
         
-        String safeTableName = table.replace("\"", "\"\"");
+        String safeTableName = table.replace("\"", "\"\"")
+									.replace("=", "").replace(" ", "");
+
+        String safeColumnName = '"' + column.replace("\"", "\"\"")
+									  .replace("=", "").replace(" ", "");
         
         String sqlIfExist = "" +
 			"SELECT EXISTS(SELECT 1 FROM " + safeTableName + 
-			" WHERE " + column + " = ?)";
+			" WHERE " + safeColumnName + " = ?)";
 
 		try (PreparedStatement pstmt = conn.prepareStatement(sqlIfExist)) {
 			pstmt.setString(1, value);
@@ -197,11 +225,15 @@ public class DatabaseEngine implements LogColorFormatter {
             return false;
         }
 
-        String safeTableName = table.replace("\"", "").replace("'", "");
+        String safeTableName = table.replace("\"", "\"\"")
+									.replace("=", "").replace(" ", "");
+
+        String safeColumnName = column.replace("\"", "\"\"").replace("\"", "\"\"")
+									  .replace("=", "").replace(" ", "");
 
         String sqlIfExist = "" +
 			"SELECT EXISTS(SELECT 1 FROM " + safeTableName +
-			" WHERE " + column.replace("\"", "").replace("'", "") + " = ?)";
+			" WHERE " + safeColumnName + " = ?)";
 
 		try (PreparedStatement pstmt = conn.prepareStatement(sqlIfExist)) {
 			pstmt.setLong(1, value);
@@ -218,30 +250,39 @@ public class DatabaseEngine implements LogColorFormatter {
 		return false;
 	}
 	
-	public ResultSet select(
+	public ResultSet selectEquals(
 		String columns, String table, 
-		String whereClause
+		String whereColumn, Object whereValue
 	) throws SQLException {
+
         StringBuilder query = new StringBuilder("SELECT ");
         query.append(columns).append(" FROM ").append(table);
-        if (!whereClause.trim().isEmpty()) {
-            query.append(" WHERE ").append(whereClause);
+
+        if (!whereColumn.trim().isEmpty()) {
+            query.append(" WHERE ").append(whereColumn)
+				 .append(" = ?");
         }
+
         PreparedStatement pstmt = conn.prepareStatement(query.toString());
+        pstmt = escapeSQLValue(pstmt, whereValue);
+
         return pstmt.executeQuery();
     }
     
-    public ResultSet select(
+    public ResultSet selectEquals(
 		String columns, String table, 
-		String whereClause, String orderByClause
+		String whereColumn, Object whereValue,
+		String orderByClause
 	) throws SQLException {
 		
         StringBuilder query = new StringBuilder("SELECT ");
         query.append(columns).append(" FROM ").append(table);
         
-        if (!whereClause.trim().isEmpty()) {
-            query.append(" WHERE ").append(whereClause);
+        if (!whereColumn.trim().isEmpty()) {
+            query.append(" WHERE ").append(whereColumn)
+				 .append(" = ?");
         }
+
         if (!orderByClause.trim().isEmpty()) {
 			String[] orderSplitted = orderByClause.split("_");
 			if(orderSplitted.length > 1) {
@@ -253,8 +294,10 @@ public class DatabaseEngine implements LogColorFormatter {
 				}
 			}
 		}
-        onInfo(query.toString());
+
         PreparedStatement pstmt = conn.prepareStatement(query.toString());
+        pstmt = escapeSQLValue(pstmt, whereValue);
+
         return pstmt.executeQuery();
     }
     
@@ -294,20 +337,31 @@ public class DatabaseEngine implements LogColorFormatter {
         return pstmt.executeUpdate() > 0;
     }
 
-    public boolean update(String table, String column, Object value) throws SQLException {
-        if (value != null) {
+    public boolean update(
+		String table, String column, Object value,
+		String whereColumn, Object whereValue
+	) throws SQLException {
+        if (value == null)
             return false;
-        }
 
 		StringBuilder query = new StringBuilder("UPDATE ");
 		query.append(table).append(" SET ")
-		     .append(column).append(" = ?;");
+		     .append(column).append(" = ?");
+
+		if (!whereColumn.trim().isEmpty()) {
+            query.append(" WHERE ").append(whereColumn)
+				 .append(" = ?");
+        }
 
         PreparedStatement pstmt = conn.prepareStatement(query.toString());
 
         pstmt = escapeSQLValue(pstmt, value);
+        if(whereValue != null)
+			pstmt = escapeSQLValue(pstmt, 1, whereValue);
+		boolean result = pstmt.executeUpdate() > 0;
 
-        return pstmt.executeUpdate() > 0;
+		onInfo(query.toString());
+        return result;
     }
     
     public int getEntryCount(String table) {

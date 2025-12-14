@@ -7,6 +7,7 @@ import java.lang.reflect.Field;
 
 import ru.tinelix.muchatter.commands.HelloCommand;
 import ru.tinelix.muchatter.commands.ProfileCommand;
+import ru.tinelix.muchatter.commands.SettingsCommand;
 
 import ru.tinelix.muchatter.core.BotCommand;
 import ru.tinelix.muchatter.core.MuChatter;
@@ -64,6 +65,7 @@ public class CommandSearch {
         commands.put("/start",      HelloCommand.COMMAND_NAME);
         commands.put("/hello",      HelloCommand.COMMAND_NAME);
         commands.put("/profile",    ProfileCommand.COMMAND_NAME);
+        commands.put("/settings",   SettingsCommand.COMMAND_NAME);
 
         return commands;
     }
@@ -73,6 +75,8 @@ public class CommandSearch {
 
         commands.put(ProfileCommand.EDIT_PROFILE_CALLBACK,          ProfileCommand.COMMAND_NAME);
         commands.put(ProfileCommand.FILL_PROFILE_TEXTAREA_CALLBACK, ProfileCommand.COMMAND_NAME);
+        commands.put(SettingsCommand.EDIT_USER_SETTINGS_CALLBACK,   SettingsCommand.COMMAND_NAME);
+        commands.put(SettingsCommand.SET_USER_SETTINGS_CALLBACK,    SettingsCommand.COMMAND_NAME);
 
         return commands;
     }

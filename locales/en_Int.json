@@ -5,19 +5,37 @@
     "muchatter_l10n_author": "Dmitry Tretyakov (tretdm)",
 
     "muchatter_l10n_strings": {
-        "greetings": "Hi, %s. My name is μChatter (muChatter) - is your indispensable companion in chats.\r\n\r\nThe bot is currently in alpha testing, so we recommend checking out the @tinelix channel for updates.",
-        "ovk_disclaimer": "* OpenVK social network not affiliated in any way with VKontakte and VK LLC.",
+
+        "_lc01": "Headers",
+
+        "error_title": "Error",
         "profile_info_title": "about user",
-        "profile_edit_areas": "To fill in or change your information, click one of the buttons below.\r\n\r\nPlease note that some fields are pre-populated based on your Telegram account's public data and may be subject to change depending on your privacy settings.",
-        "profile_edit_areas_2": "Enter your details in the selected <B>%s</B> field. When you're finished, submit directly there.",
-        "not_specified": "[Not specified]",
+        "settings_title": "Settings",
+
+        "_lc02": "Messages",
+
+        "greetings":                "Hi, %s. My name is μChatter (muChatter) - is your indispensable companion in chats.\r\n\r\nThe bot is currently in alpha testing, so we recommend checking out the @tinelix channel for updates.",
+        "profile_edit_areas":       "To fill in or change your information, click one of the buttons below.\r\n\r\nPlease note that some fields are pre-populated based on your Telegram account's public data and may be subject to change depending on your privacy settings.",
+        "profile_edit_areas_2":     "Enter your details in the selected <B>%s</B> field. When you're finished, submit directly there.",
+        "settings_edit_areas":      "To change the desired parameter, click one of the buttons below.",
+        "settings_parameter":       "Parameter: %s\r\nValue: %s",
+        "settings_edit_areas_2":    "Enter a new value for the <B>%s</B> parameter. When you're done, submit it directly there.",
+        "ovk_disclaimer":           "* OpenVK social network not affiliated in any way with VKontakte and VK LLC.",
+        "not_implemented":          "🛠️ This feature isn't currently implemented, so calling isn't possible. Please check back later.",
+
+        "_lc03": "Data",
+
+        "not_specified": "[Not specified]"
     },
 
     "muchatter_l10n_arrays": {
-        "on_off":             ["On", "Off"],
-        "user_settings_list": ["User Rank", "Timezone", "Reputation"],
-        "profile_forms":      ["📅 Birthdate", "🧠 Interests", "⚽ Hobbys", "📍 Location", "💬 IRC nickname", "🧑‍💻 Matrix address", "🐕 OpenVK profile*"],
-        "profile_buttons":    ["🖍️ Edit", "🖍️ Fill"]
+        "error_reasons":        ["This command can only be called in private messages."],
+        "on_off":               ["Off", "On"],
+        "profile_forms":        ["📅 Birthdate", "🧠 Interests", "⚽ Hobbys", "📍 Location", "💬 IRC nickname", "🧑‍💻 Matrix address", "🐕 OpenVK profile*"],
+        "profile_buttons":      ["🖍️ Edit", "🖍️ Fill", "❌ Cancel"],
+        "settings_categories":  ["👤 User Settings", "👥 Group Settings"],
+        "user_settings_forms":  ["Language", "Timezone", "Scores Counter", "Reputation"],
+        "settings_buttons":     ["🖍️ Edit", "▶️ Turn on", "⏹️ Turn off", "⬅️ Back", "❌ Cancel"]
     },
 
     "muchatter_l10n_plurals": {

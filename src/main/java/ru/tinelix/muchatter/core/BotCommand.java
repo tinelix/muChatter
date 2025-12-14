@@ -5,13 +5,18 @@ import java.util.HashMap;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.chat.Chat;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup.InlineKeyboardMarkupBuilder;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import ru.tinelix.muchatter.core.CommandSearch;
 import ru.tinelix.muchatter.db.DatabaseEngine;
+import ru.tinelix.muchatter.db.SQLProcessor;
+import ru.tinelix.muchatter.utils.DoubleArrayList;
 
 public class BotCommand {
 
@@ -92,6 +97,8 @@ public class BotCommand {
 
         if(firstDelimIndex > 0)
             mArgsText = msgText.substring(firstDelimIndex + 1);
+
+       SQLProcessor.updateUserIntoDb(mChatter, mDatabase, mTgFrom);
     }
 
     protected void run() {
@@ -134,6 +141,66 @@ public class BotCommand {
                 .text(text)
                 .callbackData(callbackData)
                 .build();
+    }
+
+    protected InlineKeyboardMarkup createT9Layout(String callbackData, int startPos, int size, boolean pagination) {
+        DoubleArrayList<InlineKeyboardButton> buttons = new DoubleArrayList<>();
+
+        String startPosNum = Integer.toString(startPos);
+
+        if(size > 10) {
+            return null;
+        }
+
+        if(startPosNum.endsWith("0")) {
+            startPos++;
+        }
+
+        for(int i = startPos; i < (size + startPos); i++) {
+            String emojiNum = Integer.toString(i);
+
+            emojiNum
+                .replace("0", "0️⃣")
+                .replace("1", "1️⃣")
+                .replace("2", "2️⃣")
+                .replace("3", "3️⃣")
+                .replace("4", "4️⃣")
+                .replace("5", "5️⃣")
+                .replace("6", "6️⃣")
+                .replace("7", "7️⃣")
+                .replace("8", "8️⃣")
+                .replace("9", "9️⃣");
+
+            buttons.addToInnerArray(
+                (int)Math.floor((i - startPos) / 3),
+                (i - startPos) % 3,
+                createInlineButton(emojiNum, callbackData + "_" + i)
+            );
+        }
+
+        if(pagination && size == 10)
+            buttons.addToInnerArray(
+                3,
+                0,
+                createInlineButton("⏭️", callbackData + "_next")
+            );
+        else if(startPos > 10)
+            buttons.addToInnerArray(
+                3,
+                0,
+                createInlineButton("⏮️", callbackData + "_prev")
+            );
+
+
+        InlineKeyboardMarkupBuilder builder = InlineKeyboardMarkup.builder();
+
+        for(int i = 0; i < buttons.size(); i++) {
+            builder.keyboardRow(new InlineKeyboardRow(buttons.get(i)));
+        }
+
+
+
+        return builder.build();
     }
 
     protected void update(long msgId) {

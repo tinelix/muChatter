@@ -6,6 +6,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.ZoneId;
+
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,10 +25,11 @@ import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChat;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import ru.tinelix.muchatter.core.interfaces.LogColorFormatter;
+import ru.tinelix.muchatter.core.Locale;
+import ru.tinelix.muchatter.core.MuChatter;
 import ru.tinelix.muchatter.db.DatabaseEngine;
 import ru.tinelix.muchatter.db.SQLCreator;
-import ru.tinelix.muchatter.core.interfaces.LogColorFormatter;
-import ru.tinelix.muchatter.core.MuChatter;
 
 public class SQLProcessor implements LogColorFormatter {
 	
@@ -102,10 +108,12 @@ public class SQLProcessor implements LogColorFormatter {
 
                 ChatFullInfo chatInfo = chatter.getTelegramClient().execute(chatInfoApi);
 
+                ZonedDateTime current_dt = LocalDateTime.now().atZone(ZoneId.of(chatter.getDefaultTimezone()));
+
                 values.put("tg_user_id",  tgUser.getId());
                 values.put("tg_nickname", tgUser.getUserName());
-                values.put("first_name",  tgUser.getUserName());
-                values.put("last_name",   tgUser.getFirstName());
+                values.put("first_name",  tgUser.getFirstName());
+                values.put("last_name",   tgUser.getLastName());
                 values.put("birth_date",  chatInfo.getBirthdate() == null ?
                            "1800-01-01" : String.format("%d-%02d-%02d",
                                                         chatInfo.getBirthdate().getYear() == null ?
@@ -113,6 +121,12 @@ public class SQLProcessor implements LogColorFormatter {
                                                         chatInfo.getBirthdate().getMonth(),
                                                         chatInfo.getBirthdate().getDay()
                                           )
+                          );
+                values.put("reg_date",
+                           String.format("%d-%02d-%02d",
+                                         current_dt.getYear(),
+                                         current_dt.getMonthValue(),
+                                         current_dt.getDayOfMonth())
                           );
 
                 values.put("interests", null);
@@ -123,7 +137,7 @@ public class SQLProcessor implements LogColorFormatter {
                 LinkedHashMap<String, Object> values = new LinkedHashMap<>();
 
                 values.put("tg_user_id", tgUser.getId());
-                values.put("ui_language", tgUser.getLanguageCode());
+                values.put("ui_language", Locale.isExist(tgUser.getLanguageCode()) ? "en" : tgUser.getLanguageCode());
                 values.put("timezone", 180);
                 values.put("levels", false);
                 values.put("reps", true);
@@ -143,8 +157,8 @@ public class SQLProcessor implements LogColorFormatter {
             if(suffix != null && !suffix.equals(""))
                 table_name = String.format("user_%s", suffix);
 
-            if(dbEngine.ifExist(table_name, "tg_user_id", Long.toString(tgUser.getId()))) {
-                resultSet = dbEngine.select("*", table_name, Long.toString(tgUser.getId()));
+            if(dbEngine.ifExist(table_name, "tg_user_id", tgUser.getId())) {
+                resultSet = dbEngine.selectEquals("*", table_name, "tg_user_id", tgUser.getId());
                 resultSet.next();
                 return resultSet;
             } else
@@ -155,6 +169,84 @@ public class SQLProcessor implements LogColorFormatter {
         }
 
         return null;
+    }
+
+    public static void updateUserIntoDb(MuChatter chatter, DatabaseEngine dbEngine, User tgUser) {
+        try {
+            GetChat chatInfoApi = GetChat
+                    .builder()
+                    .chatId(tgUser.getId())
+                    .build();
+
+            ChatFullInfo chatInfo = chatter.getTelegramClient().execute(chatInfoApi);
+
+            if(dbEngine.ifExist("users", "tg_user_id", tgUser.getId())) {
+                dbEngine.update(
+                    "users",
+                    SQLCreator.SQL_USER_COLUMNS[0], tgUser.getUserName(),
+                    "tg_user_id", tgUser.getId()
+                );
+
+                dbEngine.update(
+                    "users",
+                    SQLCreator.SQL_USER_COLUMNS[1], tgUser.getFirstName(),
+                    "tg_user_id", tgUser.getId()
+                );
+
+                dbEngine.update(
+                    "users",
+                    SQLCreator.SQL_USER_COLUMNS[2], tgUser.getLastName(),
+                    "tg_user_id", tgUser.getId()
+                );
+
+                dbEngine.update(
+                    "users",
+                    SQLCreator.SQL_USER_COLUMNS[3], chatInfo.getBirthdate() == null ?
+                        "1800-01-01" : String.format("%d-%02d-%02d",
+                                                     chatInfo.getBirthdate().getYear() == null ?
+                                                         "1800" : chatInfo.getBirthdate().getYear(),
+                                                     chatInfo.getBirthdate().getMonth(),
+                                                     chatInfo.getBirthdate().getDay()),
+                        "tg_user_id", tgUser.getId()
+                    );
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public static void updateUserIntoDb(MuChatter chatter, DatabaseEngine dbEngine, User tgUser, int columnIndex, Object value) {
+        try {
+            if(dbEngine.ifExist("users", "tg_user_id", tgUser.getId()))
+                dbEngine.update("users", SQLCreator.SQL_USER_COLUMNS[columnIndex], value, "tg_user_id", tgUser.getId());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void updateUserIntoDb(MuChatter chatter, DatabaseEngine dbEngine, User tgUser, int columnIndex, Object value, String suffix) {
+        try {
+            String table_name = "";
+
+            if(suffix != null && !suffix.equals(""))
+                table_name = String.format("user_%s", suffix);
+
+            if(dbEngine.ifExist(table_name, "tg_user_id", tgUser.getId())) {
+                String column = "";
+
+
+                switch(suffix) {
+                    case "settings":
+                        column = SQLCreator.SQL_USER_SETTINGS_COLUMNS[columnIndex];
+                        break;
+                }
+
+                dbEngine.update(table_name, column, value, "tg_user_id", tgUser.getId());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
     @Override

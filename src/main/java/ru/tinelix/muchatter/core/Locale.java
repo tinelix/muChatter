@@ -140,7 +140,7 @@ public class Locale {
         String localeFileName = String.format("locales/%s.json", langCode);
 
         try {
-        File f = new File(localeFileName);
+            File f = new File(localeFileName);
 
             if (!f.exists()) return 0;
 
@@ -161,5 +161,75 @@ public class Locale {
         } catch(IOException ex) {}
 
         return 0;
+    }
+
+    public static boolean isExist(String langCode) {
+        if(!langCode.contains("_"))
+            langCode += "_Int";
+
+        String localeFileName = String.format("locales/%s.json", langCode);
+
+        File f = new File(localeFileName);
+        return f.exists();
+    }
+
+
+    public static String[] getAvailableLocales() {
+
+        String localeFolderName = "locales";
+
+        File folder = new File(localeFolderName);
+        return folder.list();
+    }
+
+    public static String getRemoteLanguageName(String filename) {
+
+        String langName = "";
+
+        String localeFileName = String.format("locales/%s", filename);
+
+        try {
+            File f = new File(localeFileName);
+
+            if (!f.exists()) return "";
+
+            InputStream is = new FileInputStream(localeFileName);
+            String jsonTxt = IOUtils.toString(is, "UTF-8");
+
+            JSONObject json = new JSONObject(jsonTxt);
+
+            if(json.has("muchatter_lang_name"))
+                langName = (String) json.get("muchatter_lang_name");
+
+        } catch(IOException ex) {}
+
+        return langName;
+    }
+
+    public static String getLanguageName(String langCode) {
+
+        if(!langCode.contains("_"))
+            langCode += "_Int";
+
+        String langName = "";
+
+        String localeFileName = String.format("locales/%s.json", langCode);
+
+        try {
+            File f = new File(localeFileName);
+
+            if (!f.exists()) return "";
+
+            InputStream is = new FileInputStream(localeFileName);
+            String jsonTxt = IOUtils.toString(is, "UTF-8");
+
+            JSONObject json = new JSONObject(jsonTxt);
+
+            if(json.has("muchatter_lang_name"))
+                langName = (String) json.get("muchatter_lang_name");
+
+        } catch(IOException ex) {}
+
+        return langName;
     }
 }

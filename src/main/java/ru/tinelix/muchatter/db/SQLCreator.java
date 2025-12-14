@@ -15,6 +15,7 @@ public class SQLCreator {
             "first_name VARCHAR(60) NOT NULL, " +
             "last_name VARCHAR(60), " +
             "birth_date DATE NOT NULL, " +
+            "reg_date DATE NOT NULL, " +
             "interests VARCHAR(255), " +
             "hobbys VARCHAR(255), " +
             "city VARCHAR(40), " +
@@ -122,9 +123,10 @@ public class SQLCreator {
     public static final String SQL_CREATE_GROUP_BRIDGES_TABLE = "" +
         "CREATE TABLE IF NOT EXISTS group_bridges (" +
             "tg_group_id BIGINT PRIMARY KEY, " +
-            "irc_channel VARCHAR(30) NOT NULL, " +
-            "xmpp_group_id VARCHAR(255) NOT NULL, " +
-            "matrix_group_id VARCHAR(255) NOT NULL, " +
+            "irc_server_id BIGINT, " +
+            "irc_channel VARCHAR(30), " +
+            "xmpp_group_id VARCHAR(255), " +
+            "matrix_group_id VARCHAR(255), " +
             "CONSTRAINT group_bridges_fk " +
             "FOREIGN KEY (tg_group_id) REFERENCES groups (tg_group_id)" +
         ")";
@@ -154,4 +156,15 @@ public class SQLCreator {
             "CONSTRAINT group_spamfilters_fk " +
             "FOREIGN KEY (tg_group_id) REFERENCES groups (tg_group_id)" +
         ")";
+
+    public static final String[] SQL_USER_COLUMNS = {
+         "tg_nickname", "first_name", "last_name", "birth_date",
+         "interests", "hobbys", "city", "irc_nickname", "matrix_address",
+         "ovk_address"
+    };
+
+    public static final String[] SQL_USER_SETTINGS_COLUMNS = {
+         "ui_language", "timezone", "levels", "reps"
+    };
+
 }

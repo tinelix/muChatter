@@ -9,6 +9,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
@@ -21,6 +23,7 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ru.tinelix.muchatter.bridges.IRCBridge;
+import ru.tinelix.muchatter.bridges.IRCBridge.IRCServer;
 import ru.tinelix.muchatter.core.interfaces.LogColorFormatter;
 import ru.tinelix.muchatter.core.BotCommand;
 import ru.tinelix.muchatter.db.DatabaseEngine;
@@ -29,18 +32,21 @@ import ru.tinelix.muchatter.db.DatabaseEngine;
 public class MuChatter implements LongPollingSingleThreadUpdateConsumer, LogColorFormatter {
 		
 	public static class ChatterConfig {
-		public String 	tg_token;
-		public String 	bot_username;
-		public String 	bot_name;
-		public long   	tg_bot_owner_id;
-		public boolean	use_irc_bridge;
-		public String 	irc_server;
-		public int		irc_port;
-		public String 	irc_encoding;
-		public String 	irc_nickname;
-		public String 	irc_ns_passwd;
-		public String 	license;
-	}	
+		public String 					tg_token;
+		public String 					bot_username;
+		public String 					bot_name;
+		public long   					tg_bot_owner_id;
+		public boolean					use_irc_bridge;
+		public String 					irc_nickname;
+		public ArrayList<IRCServer> 	irc_servers;
+		public String 					license;
+		public String 					def_timezone;
+		public ChatterLimits			limits;
+	}
+
+	public static class ChatterLimits {
+		public int						max_bridge_threads;
+	}
 		
 	private static String VERSION = "0.0.0";
 		
@@ -72,10 +78,7 @@ public class MuChatter implements LongPollingSingleThreadUpdateConsumer, LogColo
 				mClient = new OkHttpTelegramClient(getBotToken());
 
 				mIRCBridge = new IRCBridge(mConfig, this);
-				mIRCThread = new Thread(mIRCBridge);
-
-				mIRCThread.setDaemon(true);
-				mIRCThread.start();
+				mIRCBridge.start();
 
 				mDatabase = new DatabaseEngine();
 				mDatabase.connect();
@@ -98,9 +101,53 @@ public class MuChatter implements LongPollingSingleThreadUpdateConsumer, LogColo
 		return mConfig.bot_username;
 	}
 
+	public String getDefaultTimezone() {
+		return mConfig.def_timezone;
+	}
+
+	public ZoneOffset getTimeZoneOffset(String tz_name) {
+		ZoneOffset offset = null;
+
+		switch(tz_name) {
+			case "Europe/Helsinki":
+			case "Europe/Berlin":
+			case "Europe/Paris":
+			case "Europe/Kiev":
+				return ZoneOffset.ofHoursMinutes(2, 0);
+			case "Europe/Kaliningrad":
+			case "Europe/Minsk":
+			case "Europe/Moscow":
+				return ZoneOffset.ofHoursMinutes(3, 0);
+			case "Asia/Yerevan":
+			case "Europe/Astrakhan":
+			case "Europe/Volgograd":
+			case "Europe/Samara":
+				return ZoneOffset.ofHoursMinutes(4, 0);
+			case "Asia/Almaty":
+			case "Asia/Yekaterinburg":
+				return ZoneOffset.ofHoursMinutes(5, 0);
+			case "Asia/Omsk":
+				return ZoneOffset.ofHoursMinutes(6, 0);
+			case "Asia/Novosibirsk":
+			case "Asia/Barnaul":
+			case "Asia/Krasnoyarsk":
+				return ZoneOffset.ofHoursMinutes(7, 0);
+			case "Asia/Yakutsk":
+				return ZoneOffset.ofHoursMinutes(9, 0);
+			case "Asia/Vladivostok":
+				return ZoneOffset.ofHoursMinutes(10, 0);
+			case "Asia/Magadan":
+				return ZoneOffset.ofHoursMinutes(11, 0);
+			default:
+				return getTimeZoneOffset(getDefaultTimezone());
+		}
+	}
+
 	public void makeTemporaryCallback(String name, Chat tgChat, User tgFrom) {
 		if(mBotCallbackMap == null)
 			mBotCallbackMap = new HashMap<>();
+		else if(mBotCallbackMap.containsKey(tgChat.getId()))
+			removeTemporaryCallback(name, tgChat, tgFrom);
 
 		mBotCallbackMap.put(tgChat.getId(), new BotCallback(name, tgChat, tgFrom));
 	}
@@ -113,6 +160,7 @@ public class MuChatter implements LongPollingSingleThreadUpdateConsumer, LogColo
 	}
 
 	public void removeTemporaryCallback(String name, Chat tgChat, User tgFrom) {
+		//if(tgChat.getId() == )
 		mBotCallbackMap.remove(tgChat.getId());
 	}
 
@@ -200,8 +248,12 @@ public class MuChatter implements LongPollingSingleThreadUpdateConsumer, LogColo
 				this, mDatabase, tgChat, tgFrom, cbData
 			);
 
-			if(command != null)
+			if(command != null) {
+				onInfo(String.format("Command found:\r\nCallback: %s", cbData));
 				command.update(msgId);
+			} else {
+				onError(String.format("Command not found:\r\nCallback: %s", cbData));
+			}
 		}
 	}
 

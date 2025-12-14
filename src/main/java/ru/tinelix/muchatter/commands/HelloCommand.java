@@ -39,6 +39,9 @@ public class HelloCommand extends BotCommand {
             SQLProcessor.registerUserIntoDb(mChatter, mDatabase, mTgChat, mTgFrom);
 
             ResultSet userDbResult = SQLProcessor.getUserFromDb(mChatter, mDatabase, mTgFrom, "settings");
+            ResultSet userSettingsDbResult =
+                    SQLProcessor.getUserFromDb(mChatter, mDatabase, mTgFrom, "settings");
+
 
             SendMessage message = new SendMessage(
                 Long.toString(mTgChat.getId()),

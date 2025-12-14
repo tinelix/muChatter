@@ -4,14 +4,26 @@
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 {
-  "tg_token":         "[TELEGRAM_BOT_TOKEN]", 
+  "tg_token":         "[TELEGRAM_BOT_TOKEN]",
   "bot_username":     "[TELEGRAM_BOT_USERNAME]",
   "bot_name":         "[BOT_NAME]",
   "tg_bot_owner_id":  0,          // your Telegram user ID
   "use_irc_bridge":   false,      // if "false" set, ignore below
-  "irc_server":       "[IRC_SERVER_ADDRESS]", 
-  "irc_port":         0,          // your IRC server port
-  "irc_nickname":     "[IRC_BOT_NICKNAME]", 
-  "irc_ns_passwd":    "[IRC_BOT_PASSWORD_FOR_NICKSERV]",
-  "license":          ""
+  "irc_nickname":     "[IRC_BOT_NICKNAME]",
+  "irc_servers" : [
+    {
+      "address":        "[IRC_FIRST_SERVER_ADDRESS]",
+      "port":           0,          // your IRC server port
+      "ns_passwd":      "[IRC_FIRST_BOT_PASSWORD_FOR_NICKSERV]",
+      "encoding":       "[IRC_FIRST_SERVER_ENCODING]"
+    },
+    { // if the second server is not involved, you can delete this block
+      "address":        "[IRC_SECOND_SERVER_ADDRESS]",
+      "port":           0,          // your IRC server port
+      "ns_passwd":      "[IRC_SECOND_BOT_PASSWORD_FOR_NICKSERV]",
+      "encoding":       "[IRC_FIRST_SERVER_ENCODING]"
+    },
+  ],
+  "license":          "",
+  "def_timezone":     "[DEFAULT_TIMEZONE]"
 }
