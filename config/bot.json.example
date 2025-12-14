@@ -25,5 +25,8 @@
     },
   ],
   "license":          "",
-  "def_timezone":     "[DEFAULT_TIMEZONE]"
+  "def_timezone":     "[DEFAULT_TIMEZONE]",
+  "limits": {
+    "max_bridge_threads":      "15"
+  }
 }
