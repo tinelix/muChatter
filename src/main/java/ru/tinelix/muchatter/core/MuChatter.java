@@ -16,6 +16,7 @@ import java.util.HashMap;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.objects.chat.Chat;
+import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMemberUpdated;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -24,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ru.tinelix.muchatter.bridges.IRCBridge;
 import ru.tinelix.muchatter.bridges.IRCBridge.IRCServer;
+import ru.tinelix.muchatter.commands.HelloCommand;
 import ru.tinelix.muchatter.core.interfaces.LogColorFormatter;
 import ru.tinelix.muchatter.core.BotCommand;
 import ru.tinelix.muchatter.db.DatabaseEngine;
@@ -87,10 +89,6 @@ public class MuChatter implements LongPollingSingleThreadUpdateConsumer, LogColo
 				onError("Please create 'config/bot.json' file and try again.\r\n");
 				e.printStackTrace();
 			}
-	}
-		
-	public void onUpdateReceived(Update update) {
-		
 	}
 	
 	public String getBotToken() {
@@ -216,10 +214,20 @@ public class MuChatter implements LongPollingSingleThreadUpdateConsumer, LogColo
 	public void consume(Update update) {
 		// We check if the update has a message and the message has text
 		if (update.hasMessage() && update.getMessage().hasText()) {
-
 			User 	tgFrom     = update.getMessage().getFrom();
 			Chat 	tgChat     = update.getMessage().getChat();
 			String  tgMsgText  = update.getMessage().getText();
+
+			String[] directCmdArray = tgMsgText.split("@");
+
+			String botMention = String.format("@%s", mConfig.bot_username);
+
+			if(tgChat.getId() < 0
+			   && directCmdArray.length > 1
+			   && directCmdArray[1].startsWith(mConfig.bot_username))
+					tgMsgText = tgMsgText.replace(
+									directCmdArray[0] + botMention, directCmdArray[0]
+								);
 
 			BotCallback callback = getTemporaryCallback(tgChat);
 
@@ -231,6 +239,7 @@ public class MuChatter implements LongPollingSingleThreadUpdateConsumer, LogColo
 				if(command != null)
 					command.runFromCallback(tgMsgText);
 			} else {
+
 				BotCommand command = BotCommand.resolve(
 					this, mDatabase, tgChat, tgFrom, tgMsgText
 				);
@@ -255,6 +264,11 @@ public class MuChatter implements LongPollingSingleThreadUpdateConsumer, LogColo
 				onError(String.format("Command not found:\r\nCallback: %s", cbData));
 			}
 		}
+
+	}
+
+	public void onUpdateReceived(Update update) {
+		onInfo("Test!");
 	}
 
 	public class BotCallback {

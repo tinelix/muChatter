@@ -7,6 +7,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.chat.Chat;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton.InlineKeyboardButtonBuilder;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup.InlineKeyboardMarkupBuilder;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -136,11 +137,24 @@ public class BotCommand {
         return info;
     }
 
-    protected InlineKeyboardButton createInlineButton(String text, String callbackData) {
+    protected InlineKeyboardButton createInlineButton(String text, String data) {
         return InlineKeyboardButton.builder()
                 .text(text)
-                .callbackData(callbackData)
+                .callbackData(data)
                 .build();
+    }
+
+    protected InlineKeyboardButton createInlineButton(String text, String data, boolean useAsUrl) {
+        InlineKeyboardButtonBuilder builder = InlineKeyboardButton.builder();
+
+        builder.text(text);
+
+        if(useAsUrl)
+            builder.url(data);
+        else
+            builder.callbackData(data);
+
+        return builder.build();
     }
 
     protected InlineKeyboardMarkup createT9Layout(String callbackData, int startPos, int size, boolean pagination) {
@@ -197,8 +211,6 @@ public class BotCommand {
         for(int i = 0; i < buttons.size(); i++) {
             builder.keyboardRow(new InlineKeyboardRow(buttons.get(i)));
         }
-
-
 
         return builder.build();
     }

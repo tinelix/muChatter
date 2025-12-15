@@ -10,6 +10,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.chat.Chat;
 import org.telegram.telegrambots.meta.api.objects.chat.ChatFullInfo;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChat;
+import org.telegram.telegrambots.meta.api.objects.LinkPreviewOptions;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -47,6 +48,40 @@ public class HelloCommand extends BotCommand {
                 Long.toString(mTgChat.getId()),
                 Locale.translate(userDbResult.getString("ui_language"), "greetings", locale_args)
             );
+
+            message.setParseMode("HTML");
+
+            message.disableWebPagePreview();
+
+            mChatter.getTelegramClient().execute(message);
+        } catch (Exception e) {
+            mChatter.onError(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void sendChatGreetings() {
+
+        List<Object> locale_args = new ArrayList<>();
+
+        locale_args.add(mTgFrom.getFirstName());
+
+        try {
+            SQLProcessor.registerUserIntoDb(mChatter, mDatabase, mTgChat, mTgFrom);
+
+            ResultSet userDbResult = SQLProcessor.getUserFromDb(mChatter, mDatabase, mTgFrom, "settings");
+            ResultSet userSettingsDbResult =
+                    SQLProcessor.getUserFromDb(mChatter, mDatabase, mTgFrom, "settings");
+
+
+            SendMessage message = new SendMessage(
+                Long.toString(mTgChat.getId()),
+                Locale.translate(userDbResult.getString("ui_language"), "chat_greetings", locale_args)
+            );
+
+            message.setParseMode("HTML");
+
+            message.disableWebPagePreview();
 
             mChatter.getTelegramClient().execute(message);
         } catch (Exception e) {

@@ -14,14 +14,14 @@
 
         "_lc02": "Messages",
 
-        "greetings":                "Hi, %s. My name is μChatter (muChatter) - is your indispensable companion in chats.\r\n\r\nThe bot is currently in alpha testing, so we recommend checking out the @tinelix channel for updates.",
+        "greetings":                "👋 <B>Hi, %s. My name is μChatter (muChatter) - is your indispensable companion in chats.</B>\r\n\r\nThe bot is currently in alpha testing, so we recommend checking out the @tinelixsoft channel for updates.",
+        "not_implemented":          "🛠️ This feature isn't currently implemented, so calling isn't possible. Please check back later.",
         "profile_edit_areas":       "To fill in or change your information, click one of the buttons below.\r\n\r\nPlease note that some fields are pre-populated based on your Telegram account's public data and may be subject to change depending on your privacy settings.",
         "profile_edit_areas_2":     "Enter your details in the selected <B>%s</B> field. When you're finished, submit directly there.",
         "settings_edit_areas":      "To change the desired parameter, click one of the buttons below.",
         "settings_parameter":       "Parameter: %s\r\nValue: %s",
         "settings_edit_areas_2":    "Enter a new value for the <B>%s</B> parameter. When you're done, submit it directly there.",
         "ovk_disclaimer":           "* OpenVK social network not affiliated in any way with VKontakte and VK LLC.",
-        "not_implemented":          "🛠️ This feature isn't currently implemented, so calling isn't possible. Please check back later.",
 
         "_lc03": "Data",
 

@@ -8,6 +8,7 @@ import java.lang.reflect.Field;
 import ru.tinelix.muchatter.commands.HelloCommand;
 import ru.tinelix.muchatter.commands.ProfileCommand;
 import ru.tinelix.muchatter.commands.SettingsCommand;
+import ru.tinelix.muchatter.commands.AddToGroupChatCommand;
 
 import ru.tinelix.muchatter.core.BotCommand;
 import ru.tinelix.muchatter.core.MuChatter;
@@ -66,6 +67,7 @@ public class CommandSearch {
         commands.put("/hello",      HelloCommand.COMMAND_NAME);
         commands.put("/profile",    ProfileCommand.COMMAND_NAME);
         commands.put("/settings",   SettingsCommand.COMMAND_NAME);
+        commands.put("/add",        AddToGroupChatCommand.COMMAND_NAME);
 
         return commands;
     }
