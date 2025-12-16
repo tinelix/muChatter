@@ -22,6 +22,7 @@
         "settings_parameter":       "Parameter: %s\r\nValue: %s",
         "settings_edit_areas_2":    "Enter a new value for the <B>%s</B> parameter. When you're done, submit it directly there.",
         "ovk_disclaimer":           "* OpenVK social network not affiliated in any way with VKontakte and VK LLC.",
+        "settings_done":            "✅ Changes saved.",
 
         "_lc03": "Data",
 
@@ -29,13 +30,15 @@
     },
 
     "muchatter_l10n_arrays": {
-        "error_reasons":        ["This command can only be called in private messages."],
+        "error_reasons":        ["This command can only be called in private messages.", "This command can only be called in group chats.", "You do not have administrator rights to manage the group chat."],
         "on_off":               ["Off", "On"],
         "profile_forms":        ["📅 Birthdate", "🧠 Interests", "⚽ Hobbys", "📍 Location", "💬 IRC nickname", "🧑‍💻 Matrix address", "🐕 OpenVK profile*"],
         "profile_buttons":      ["🖍️ Edit", "🖍️ Fill", "❌ Cancel"],
         "settings_categories":  ["👤 User Settings", "👥 Group Settings"],
         "user_settings_forms":  ["Language", "Timezone", "Scores Counter", "Reputation"],
-        "settings_buttons":     ["🖍️ Edit", "▶️ Turn on", "⏹️ Turn off", "⬅️ Back", "❌ Cancel"]
+        "group_settings_forms": ["Language", "Timezone", "Linked Channel", "Spam Filter", "Guard Mode", "IRC Bridge"],
+        "settings_buttons":     ["🖍️ Change", "▶️ Turn on", "⏹️ Turn off", "⬅️ Back", "❌ Cancel"],
+        "irc_bridge_buttons":   ["🌐 Network", "#️⃣ Channel"]
     },
 
     "muchatter_l10n_plurals": {

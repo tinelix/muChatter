@@ -32,6 +32,11 @@ public class HelloCommand extends BotCommand {
 
     public void run() {
 
+        if(mIsGroupChat) {
+            sendChatGreetings();
+            return;
+        }
+
         List<Object> locale_args = new ArrayList<>();
 
         locale_args.add(mTgFrom.getFirstName());
@@ -67,16 +72,15 @@ public class HelloCommand extends BotCommand {
         locale_args.add(mTgFrom.getFirstName());
 
         try {
-            SQLProcessor.registerUserIntoDb(mChatter, mDatabase, mTgChat, mTgFrom);
+            SQLProcessor.registerGroupChatIntoDb(mChatter, mDatabase, mTgChat, mTgFrom);
 
-            ResultSet userDbResult = SQLProcessor.getUserFromDb(mChatter, mDatabase, mTgFrom, "settings");
-            ResultSet userSettingsDbResult =
-                    SQLProcessor.getUserFromDb(mChatter, mDatabase, mTgFrom, "settings");
-
+            ResultSet groupDbResult = SQLProcessor.getGroupChatFromDb(mChatter, mDatabase, mTgChat);
+            ResultSet groupSettingsDbResult =
+                    SQLProcessor.getGroupChatFromDb(mChatter, mDatabase, mTgChat, "settings");
 
             SendMessage message = new SendMessage(
                 Long.toString(mTgChat.getId()),
-                Locale.translate(userDbResult.getString("ui_language"), "chat_greetings", locale_args)
+                Locale.translate(groupSettingsDbResult.getString("ui_language"), "chat_greetings", locale_args)
             );
 
             message.setParseMode("HTML");

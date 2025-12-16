@@ -30,13 +30,15 @@ import ru.tinelix.muchatter.core.Locale;
 import ru.tinelix.muchatter.core.MuChatter;
 import ru.tinelix.muchatter.db.DatabaseEngine;
 import ru.tinelix.muchatter.db.SQLCreator;
+import ru.tinelix.muchatter.db.SQLCreator.ExtendedColumn;
+
 
 public class SQLProcessor implements LogColorFormatter {
 	
 	private DatabaseEngine dbEngine;
 	private Connection conn;
-	public int last_error_code;
-	public String last_error_desc;
+	public  int last_error_code;
+	public  String last_error_desc;
 
 	public Set<String> validTables = new HashSet<>(
 		Arrays.asList(
@@ -137,7 +139,7 @@ public class SQLProcessor implements LogColorFormatter {
                 LinkedHashMap<String, Object> values = new LinkedHashMap<>();
 
                 values.put("tg_user_id", tgUser.getId());
-                values.put("ui_language", Locale.isExist(tgUser.getLanguageCode()) ? "en" : tgUser.getLanguageCode());
+                values.put("ui_language", Locale.isExist(tgUser.getLanguageCode()) ? tgUser.getLanguageCode() : "en");
                 values.put("timezone", 180);
                 values.put("levels", false);
                 values.put("reps", true);
@@ -173,6 +175,13 @@ public class SQLProcessor implements LogColorFormatter {
 
     public static void updateUserIntoDb(MuChatter chatter, DatabaseEngine dbEngine, User tgUser) {
         try {
+
+            ArrayList<ExtendedColumn> userColumns              = SQLCreator.getPublicUserColumns();
+            ArrayList<ExtendedColumn> userSettingsColumns      = SQLCreator.getPublicUserSettingsColumns();
+
+            ArrayList<ExtendedColumn> groupChatColumns         = SQLCreator.getPublicGroupChatColumns();
+            ArrayList<ExtendedColumn> groupChatSettingsColumns = SQLCreator.getPublicGroupChatSettingsColumns();
+
             GetChat chatInfoApi = GetChat
                     .builder()
                     .chatId(tgUser.getId())
@@ -183,25 +192,25 @@ public class SQLProcessor implements LogColorFormatter {
             if(dbEngine.ifExist("users", "tg_user_id", tgUser.getId())) {
                 dbEngine.update(
                     "users",
-                    SQLCreator.SQL_USER_COLUMNS[0], tgUser.getUserName(),
+                    userColumns.get(0).getName(), tgUser.getUserName(),
                     "tg_user_id", tgUser.getId()
                 );
 
                 dbEngine.update(
                     "users",
-                    SQLCreator.SQL_USER_COLUMNS[1], tgUser.getFirstName(),
+                    userColumns.get(1).getName(), tgUser.getFirstName(),
                     "tg_user_id", tgUser.getId()
                 );
 
                 dbEngine.update(
                     "users",
-                    SQLCreator.SQL_USER_COLUMNS[2], tgUser.getLastName(),
+                    userColumns.get(2).getName(), tgUser.getLastName(),
                     "tg_user_id", tgUser.getId()
                 );
 
                 dbEngine.update(
                     "users",
-                    SQLCreator.SQL_USER_COLUMNS[3], chatInfo.getBirthdate() == null ?
+                    userColumns.get(3).getName(), chatInfo.getBirthdate() == null ?
                         "1800-01-01" : String.format("%d-%02d-%02d",
                                                      chatInfo.getBirthdate().getYear() == null ?
                                                          "1800" : chatInfo.getBirthdate().getYear(),
@@ -218,8 +227,14 @@ public class SQLProcessor implements LogColorFormatter {
 
     public static void updateUserIntoDb(MuChatter chatter, DatabaseEngine dbEngine, User tgUser, int columnIndex, Object value) {
         try {
+            ArrayList<ExtendedColumn> userColumns              = SQLCreator.getPublicUserColumns();
+            ArrayList<ExtendedColumn> userSettingsColumns      = SQLCreator.getPublicUserSettingsColumns();
+
+            ArrayList<ExtendedColumn> groupChatColumns         = SQLCreator.getPublicGroupChatColumns();
+            ArrayList<ExtendedColumn> groupChatSettingsColumns = SQLCreator.getPublicGroupChatSettingsColumns();
+
             if(dbEngine.ifExist("users", "tg_user_id", tgUser.getId()))
-                dbEngine.update("users", SQLCreator.SQL_USER_COLUMNS[columnIndex], value, "tg_user_id", tgUser.getId());
+                dbEngine.update("users", SQLCreator.getPublicUserColumns().get(columnIndex).getName(), value, "tg_user_id", tgUser.getId());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -227,6 +242,12 @@ public class SQLProcessor implements LogColorFormatter {
 
     public static void updateUserIntoDb(MuChatter chatter, DatabaseEngine dbEngine, User tgUser, int columnIndex, Object value, String suffix) {
         try {
+            ArrayList<ExtendedColumn> userColumns              = SQLCreator.getPublicUserColumns();
+            ArrayList<ExtendedColumn> userSettingsColumns      = SQLCreator.getPublicUserSettingsColumns();
+
+            ArrayList<ExtendedColumn> groupChatColumns         = SQLCreator.getPublicGroupChatColumns();
+            ArrayList<ExtendedColumn> groupChatSettingsColumns = SQLCreator.getPublicGroupChatSettingsColumns();
+
             String table_name = "";
 
             if(suffix != null && !suffix.equals(""))
@@ -238,7 +259,7 @@ public class SQLProcessor implements LogColorFormatter {
 
                 switch(suffix) {
                     case "settings":
-                        column = SQLCreator.SQL_USER_SETTINGS_COLUMNS[columnIndex];
+                        column = groupChatSettingsColumns.get(columnIndex).getName();
                         break;
                 }
 
@@ -247,6 +268,161 @@ public class SQLProcessor implements LogColorFormatter {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static void registerGroupChatIntoDb(MuChatter chatter, DatabaseEngine dbEngine, Chat tgChat, User tgUser) {
+        try {
+
+            if(!dbEngine.ifExist("groups", "tg_group_id", tgChat.getId())) {
+                GetChat chatInfoApi = GetChat
+                                            .builder()
+                                            .chatId(tgChat.getId())
+                                            .build();
+
+                LinkedHashMap<String, Object> values = new LinkedHashMap<>();
+
+                ChatFullInfo chatInfo = chatter.getTelegramClient().execute(chatInfoApi);
+
+                ZonedDateTime current_dt = LocalDateTime.now().atZone(ZoneId.of(chatter.getDefaultTimezone()));
+
+                values.put("tg_group_id",   tgChat.getId());
+                values.put("name",          tgChat.getTitle());
+                values.put("public_name",   tgChat.getUserName());
+
+                /*values.put("reg_date",
+                           String.format("%d-%02d-%02d",
+                                         current_dt.getYear(),
+                                         current_dt.getMonthValue(),
+                                         current_dt.getDayOfMonth())
+                          );*/
+
+                dbEngine.add("groups", values);
+            }
+
+            if(!dbEngine.ifExist("group_settings", "tg_group_id", tgUser.getId())) {
+                LinkedHashMap<String, Object> values = new LinkedHashMap<>();
+
+                values.put("tg_group_id", tgChat.getId());
+                values.put("ui_language", Locale.isExist(tgUser.getLanguageCode()) ? "en" : tgUser.getLanguageCode());
+                values.put("timezone", 180);
+                values.put("linked_channel_id", 0);
+                values.put("comments_only", false);
+                values.put("block_by_user_rep", 0);
+                values.put("irc_bridge", false);
+                values.put("xmpp_bridge", false);
+                values.put("matrix_bridge", false);
+                values.put("warns_amount", 4);
+                values.put("levels", false);
+
+                dbEngine.add("group_settings", values);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void updateGroupChatIntoDb(MuChatter chatter, DatabaseEngine dbEngine, Chat tgChat, int columnIndex, Object value, String suffix) {
+        try {
+            ArrayList<ExtendedColumn> userColumns              = SQLCreator.getPublicUserColumns();
+            ArrayList<ExtendedColumn> userSettingsColumns      = SQLCreator.getPublicUserSettingsColumns();
+
+            ArrayList<ExtendedColumn> groupChatColumns         = SQLCreator.getPublicGroupChatColumns();
+            ArrayList<ExtendedColumn> groupChatSettingsColumns = SQLCreator.getPublicGroupChatSettingsColumns();
+
+            String table_name = "";
+
+            if(suffix != null && !suffix.equals(""))
+                table_name = String.format("group_%s", suffix);
+
+            if(dbEngine.ifExist(table_name, "tg_group_id", tgChat.getId())) {
+                String column = "";
+
+
+                switch(suffix) {
+                    case "settings":
+                        column = groupChatSettingsColumns.get(columnIndex).getName();
+                        break;
+                }
+
+                dbEngine.update(table_name, column, value, "tg_group_id", tgChat.getId());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void updateGroupChatIntoDb(MuChatter chatter, DatabaseEngine dbEngine, Chat tgChat) {
+        try {
+            ArrayList<ExtendedColumn> userColumns              = SQLCreator.getPublicUserColumns();
+            ArrayList<ExtendedColumn> userSettingsColumns      = SQLCreator.getPublicUserSettingsColumns();
+
+            ArrayList<ExtendedColumn> groupChatColumns         = SQLCreator.getPublicGroupChatColumns();
+            ArrayList<ExtendedColumn> groupChatSettingsColumns = SQLCreator.getPublicGroupChatSettingsColumns();
+
+            GetChat chatInfoApi = GetChat
+                    .builder()
+                    .chatId(tgChat.getId())
+                    .build();
+
+            ChatFullInfo chatInfo = chatter.getTelegramClient().execute(chatInfoApi);
+
+            if(dbEngine.ifExist("groups", "tg_group_id", tgChat.getId())) {
+                dbEngine.update(
+                    "groups",
+                    groupChatColumns.get(0).getName(), tgChat.getUserName(),
+                    "tg_group_id", tgChat.getId()
+                );
+
+                dbEngine.update(
+                    "groups",
+                    groupChatColumns.get(1).getName(), tgChat.getTitle(),
+                    "tg_group_id", tgChat.getId()
+                );
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static ResultSet getGroupChatFromDb(MuChatter chatter, DatabaseEngine dbEngine, Chat tgChat) {
+        try {
+            String table_name = "groups";
+            ResultSet resultSet;
+
+            if(dbEngine.ifExist(table_name, "tg_group_id", tgChat.getId())) {
+                resultSet = dbEngine.selectEquals("*", table_name, "tg_group_id", tgChat.getId());
+                resultSet.next();
+                return resultSet;
+            } else
+                return null;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static ResultSet getGroupChatFromDb(MuChatter chatter, DatabaseEngine dbEngine, Chat tgChat, String suffix) {
+        try {
+            String table_name = "groups";
+            ResultSet resultSet;
+
+            if(suffix != null && !suffix.equals(""))
+                table_name = String.format("group_%s", suffix);
+
+            if(dbEngine.ifExist(table_name, "tg_group_id", tgChat.getId())) {
+                resultSet = dbEngine.selectEquals("*", table_name, "tg_group_id", tgChat.getId());
+                resultSet.next();
+                return resultSet;
+            } else
+                return null;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
     
     @Override

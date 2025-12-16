@@ -1,6 +1,54 @@
 package ru.tinelix.muchatter.db;
 
+import java.util.ArrayList;
+
 public class SQLCreator {
+
+    public static class ExtendedColumn {
+        private final String  columnName;
+        private final String  columnType;
+        public        String  localizedName;
+        public        boolean readOnly;
+        private       String  additionalSettingsCallback;
+
+        public ExtendedColumn(String columnName, String columnType) {
+            this.columnName = columnName;
+            this.readOnly = false;
+
+            switch(columnType) {
+                case "bool":
+                case "int":
+                case "utc":
+                case "str":
+                case "lang":
+                case "date":
+                case "set":
+                    this.columnType = columnType;
+                    break;
+                default:
+                    this.columnType = "bool";
+            }
+        }
+
+        public String getName() {
+            return columnName;
+        }
+
+        public String getType() {
+            return columnType;
+        }
+
+        public String getAdditionalSettingsCallback() {
+            return additionalSettingsCallback;
+        }
+
+        public void setAdditionalSettingsCallback(String callback) {
+            if(additionalSettingsCallback == null) {
+                additionalSettingsCallback = callback;
+            }
+        }
+    }
+
     public static final String SQL_CREATE_VERSIONS_TABLE = "" +
         "CREATE TABLE IF NOT EXISTS versions (" +
             "bot_version VARCHAR(25) PRIMARY KEY, " +
@@ -157,14 +205,98 @@ public class SQLCreator {
             "FOREIGN KEY (tg_group_id) REFERENCES groups (tg_group_id)" +
         ")";
 
-    public static final String[] SQL_USER_COLUMNS = {
-         "tg_nickname", "first_name", "last_name", "birth_date",
-         "interests", "hobbys", "city", "irc_nickname", "matrix_address",
-         "ovk_address"
-    };
+    public static ArrayList<ExtendedColumn> getPublicUserColumns() {
+        ArrayList<ExtendedColumn> array = new ArrayList<>();
+        ExtendedColumn column;
 
-    public static final String[] SQL_USER_SETTINGS_COLUMNS = {
-         "ui_language", "timezone", "levels", "reps"
-    };
+        column = new ExtendedColumn("tg_nickname", "str");
+        array.add(column);
+
+        column = new ExtendedColumn("first_name", "str");
+        array.add(column);
+
+        column = new ExtendedColumn("last_name", "str");
+        array.add(column);
+
+        column = new ExtendedColumn("birth_date", "date");
+        array.add(column);
+
+        column = new ExtendedColumn("interests", "str");
+        array.add(column);
+
+        column = new ExtendedColumn("hobbys", "str");
+        array.add(column);
+
+        column = new ExtendedColumn("city", "str");
+        array.add(column);
+
+        column = new ExtendedColumn("irc_nickname", "str");
+        array.add(column);
+
+        column = new ExtendedColumn("matrix_address", "str");
+        array.add(column);
+
+        column = new ExtendedColumn("ovk_address", "str");
+        array.add(column);
+
+        return array;
+    }
+
+    public static ArrayList<ExtendedColumn> getPublicUserSettingsColumns() {
+        ArrayList<ExtendedColumn> array = new ArrayList<>();
+        ExtendedColumn column;
+
+        column = new ExtendedColumn("ui_language", "lang");
+        array.add(column);
+
+        column = new ExtendedColumn("timezone", "utc");
+        array.add(column);
+
+        column = new ExtendedColumn("levels", "bool");
+        array.add(column);
+
+        column = new ExtendedColumn("reps", "bool");
+        array.add(column);
+
+        return array;
+    }
+
+    public static ArrayList<ExtendedColumn> getPublicGroupChatColumns() {
+        ArrayList<ExtendedColumn> array = new ArrayList<>();
+        ExtendedColumn column;
+
+        column = new ExtendedColumn("name", "str");
+        array.add(column);
+
+        column = new ExtendedColumn("public_name", "str");
+        array.add(column);
+
+        return array;
+    }
+
+    public static ArrayList<ExtendedColumn> getPublicGroupChatSettingsColumns() {
+        ArrayList<ExtendedColumn> array = new ArrayList<>();
+        ExtendedColumn column;
+
+        column = new ExtendedColumn("ui_language", "lang");
+        array.add(column);
+
+        column = new ExtendedColumn("timezone", "utc");
+        array.add(column);
+
+        column = new ExtendedColumn("block_by_user_rep", "int");
+        array.add(column);
+
+        column = new ExtendedColumn("linked_channel_id", "int");
+        array.add(column);
+
+        column = new ExtendedColumn("comments_only", "bool");
+        array.add(column);
+
+        column = new ExtendedColumn("irc_bridge", "set");
+        array.add(column);
+
+        return array;
+    }
 
 }

@@ -1,6 +1,9 @@
 package ru.tinelix.muchatter.core;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.sql.ResultSet;
 
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -27,11 +30,17 @@ public class BotCommand {
     protected DatabaseEngine mDatabase;
     private CommandSearch mSearch;
 
-    protected String mMsgText;
-    protected String mCmdText;
-    protected String mArgsText;
-    protected Chat   mTgChat;
-    protected User   mTgFrom;
+    protected String        mMsgText;
+    protected String        mCmdText;
+    protected String        mArgsText;
+    protected Chat          mTgChat;
+    protected User          mTgFrom;
+    protected boolean       mIsGroupChat;
+    protected ResultSet     mPrimarySettings;
+    protected ResultSet     mUserSettings;
+    protected ResultSet     mChatSettings;
+    protected String        mUiLanguage;
+    protected int           mTzOffset;
 
     public BotCommand(MuChatter chatter, DatabaseEngine dbEngine) {
         this.mChatter = chatter;
@@ -85,6 +94,8 @@ public class BotCommand {
         // Getting Telegram chat info
         mTgChat = tgChat;
 
+        mIsGroupChat = mTgChat.getId() < 0;
+
         // Parse command input text
         mMsgText = msgText;
 
@@ -99,7 +110,19 @@ public class BotCommand {
         if(firstDelimIndex > 0)
             mArgsText = msgText.substring(firstDelimIndex + 1);
 
-       SQLProcessor.updateUserIntoDb(mChatter, mDatabase, mTgFrom);
+        SQLProcessor.updateUserIntoDb(mChatter, mDatabase, mTgFrom);
+
+        try {
+            mChatSettings = SQLProcessor.getGroupChatFromDb(mChatter, mDatabase, mTgChat, "settings");
+            mUserSettings = SQLProcessor.getUserFromDb(mChatter, mDatabase, mTgFrom, "settings");
+
+            mPrimarySettings = mIsGroupChat ? mChatSettings : mUserSettings;
+
+            mUiLanguage = mPrimarySettings.getString("ui_language");
+            mTzOffset = mPrimarySettings.getInt("timezone");
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     protected void run() {
@@ -217,5 +240,28 @@ public class BotCommand {
 
     protected void update(long msgId) {
 
+    }
+
+    protected void sendErrorMessage(int errorCode) {
+        try {
+            ResultSet dbSettingsResult =
+                mIsGroupChat ?
+                    SQLProcessor.getGroupChatFromDb(mChatter, mDatabase, mTgChat, "settings") :
+                    SQLProcessor.getUserFromDb(mChatter, mDatabase, mTgFrom, "settings");
+
+            String lang = dbSettingsResult.getString("ui_language");
+
+            String msgText = "🚫 " + Locale.translate(lang, "error_reasons", errorCode);
+
+            SendMessage message = SendMessage.builder()
+                        .chatId(mTgChat.getId())
+                        .text(msgText)
+                        .build();
+
+            message.setParseMode("HTML");
+            mChatter.getTelegramClient().execute(message);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -13,6 +13,7 @@ import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChat;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.LinkPreviewOptions;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -21,43 +22,46 @@ import ru.tinelix.muchatter.core.BotCommand;
 import ru.tinelix.muchatter.core.MuChatter;
 import ru.tinelix.muchatter.db.DatabaseEngine;
 import ru.tinelix.muchatter.db.SQLProcessor;
-
 import ru.tinelix.muchatter.core.Locale;
+import ru.tinelix.muchatter.utils.DoubleArrayList;
 
-public class AddToGroupChatCommand extends BotCommand {
+public class ChatBridgeCommand extends BotCommand {
 
-    public static final String COMMAND_NAME = "AddToGroupChat";
+    public static final String RUN_IRC_BRIDGE_WIZARD                        = "runIRCBridgeWizard";
+    public static final String SET_GROUPCHAT_IRC_BRIDGE_NETWORK_CALLBACK    = "setGroupChatBridgeNetwork";
+    public static final String SET_GROUPCHAT_IRC_BRIDGE_CHANNEL_CALLBACK    = "setGroupChatBridgeChannel";
+    public static final String AGREE_WITH_IRC_NETWORK_TOS_CALLBACK          = "agreeWithIRCNetworkToS";
 
-    public AddToGroupChatCommand(MuChatter chatter, DatabaseEngine dbEngine) {
+    public ChatBridgeCommand(MuChatter chatter, DatabaseEngine dbEngine) {
         super(chatter, dbEngine);
     }
 
     public void run() {
         try {
+            DoubleArrayList<InlineKeyboardButton> buttons = new DoubleArrayList<>();
 
-            SendMessage message = new SendMessage(
-                Long.toString(mTgChat.getId()),
-                Locale.translate(mUiLanguage, "add_to_groupchat")
-            );
+            String forms = "";
 
-            InlineKeyboardMarkup markupInline = InlineKeyboardMarkup.builder()
-                .keyboardRow(new InlineKeyboardRow(
-                        createInlineButton(
-                            Locale.translate(mUiLanguage, "add_to_groupchat_buttons", 0),
-                            String.format("https://t.me/%sbot?startgroup=start", mChatter.mConfig.bot_username),
-                            true
-                        )
-                    )
-                ).build();
+            SendMessage message = null;
 
-            message.setReplyMarkup(markupInline);
-            message.setParseMode("HTML");
-            mChatter.getTelegramClient().execute(message);
+            String msgText = "";
 
-        } catch (Exception e) {
-            mChatter.onError(e.getMessage());
+            int formsLength = 0;
+
+            if(mIsGroupChat) {
+
+            }
+
+        } catch(Exception e) {
             e.printStackTrace();
         }
     }
 
+    public void runFromCallback(String msgText) {
+
+    }
+
+    public void update(long msgId) {
+
+    }
 }

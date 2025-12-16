@@ -15,13 +15,17 @@
       "address":        "[IRC_FIRST_SERVER_ADDRESS]",
       "port":           0,          // your IRC server port
       "ns_passwd":      "[IRC_FIRST_BOT_PASSWORD_FOR_NICKSERV]",
-      "encoding":       "[IRC_FIRST_SERVER_ENCODING]"
+      "encoding":       "[IRC_FIRST_SERVER_ENCODING]",
+      "rules_link":     "[IRC_FIRST_RULES_HTTP(S)_LINK]", // if neccasary
+      "use_rules_cmd":  true
     },
     { // if the second server is not involved, you can delete this block
       "address":        "[IRC_SECOND_SERVER_ADDRESS]",
       "port":           0,          // your IRC server port
       "ns_passwd":      "[IRC_SECOND_BOT_PASSWORD_FOR_NICKSERV]",
-      "encoding":       "[IRC_FIRST_SERVER_ENCODING]"
+      "encoding":       "[IRC_SECOND_SERVER_ENCODING]",
+      "rules_link":     "[IRC_SECOND_RULES_HTTP(S)_LINK]", // if neccasary
+      "use_rules_cmd":  false
     },
   ],
   "license":          "",

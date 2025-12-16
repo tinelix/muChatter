@@ -37,6 +37,8 @@ public class IRCBridge implements LogColorFormatter {
         public int port;
         public String encoding;
         public String ns_passwd;
+        public String rules_link;
+        public boolean use_rules_cmd;
     }
 
     public IRCBridge(ChatterConfig config, MuChatter chatter) {
@@ -133,20 +135,8 @@ public class IRCBridge implements LogColorFormatter {
 
         public void handleMessage(String message) {
             try {
-                switch(message) {
-                    case "connect":
-                        connect();
-                        break;
-                    case "listen":
-                        onInfo(
-                            String.format("Listening %s:%s...", mServer.address, mServer.port)
-                        );
-                        listen();
-                        break;
-                }
-
-                if(message.startsWith("join #")) {
-                    joinChannel("test");
+                if(message.startsWith("/join #")) {
+                    joinChannel(message.substring("/join #".length()));
                 }
              } catch (Exception e) {
 
