@@ -7,16 +7,22 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+
+import ru.tinelix.muchatter.bridges.IRCPacket;
 import ru.tinelix.muchatter.core.interfaces.LogColorFormatter;
 import ru.tinelix.muchatter.core.MuChatter;
 import ru.tinelix.muchatter.core.MuChatter.ChatterConfig;
 import ru.tinelix.muchatter.db.SQLProcessor;
+import ru.tinelix.muchatter.utils.Handler;
+import ru.tinelix.muchatter.utils.Message;
 
 public class IRCBridge implements LogColorFormatter {
 
@@ -31,8 +37,11 @@ public class IRCBridge implements LogColorFormatter {
     private IRCBridgeThread[]       mThreads;
     private MuChatter               mChatter;
     private boolean                 mConnected;
+    private Handler                 mHandler;
 
     public static class IRCServer {
+        public String name;
+        public String emoji;
         public String address;
         public int port;
         public String encoding;
@@ -45,6 +54,13 @@ public class IRCBridge implements LogColorFormatter {
         mConfig     = config;
         mChatter    = chatter;
         mThreads    = new IRCBridgeThread[mConfig.limits.max_bridge_threads];
+        mHandler    = new Handler() {
+                        @Override
+                        public void handleMessage(Message msg) {
+                            super.handleMessage(msg);
+                            handleBridgeOutput((HashMap<String, Object>) msg.obj);
+                        }
+                    };
     }
 
     @Override
@@ -98,12 +114,43 @@ public class IRCBridge implements LogColorFormatter {
                                     serversSize : mConfig.limits.max_bridge_threads;
 
                 for(i = 0; i < maxServers; i++) {
-                    mThreads[i] = new IRCBridgeThread(mConfig, mConfig.irc_servers.get(i));
+                    mThreads[i] = new IRCBridgeThread(mConfig, mConfig.irc_servers.get(i), mHandler);
                     mThreads[i].start();
                 }
             }
         } catch (Exception e) {
             onError("IRCBridge: " + e.getMessage());
+        }
+    }
+
+    private void handleBridgeOutput(HashMap<String, Object> map) {
+        try {
+            if(map.containsKey("packet") && map.containsKey("server")) {
+                if(map.get("packet") instanceof IRCPacket && map.get("server") instanceof IRCServer) {
+                    IRCPacket packet = (IRCPacket) map.get("packet");
+                    IRCServer server = (IRCServer) map.get("server");
+
+                    SendMessage message = null;
+
+                    switch(packet.getMessageCode()) {
+                        case "PRIVMSG":
+                            String fromNick = packet.getFrom().split("@")[0];
+                            message = new SendMessage(
+                                "1833116067",
+                                String.format("<I>%s, %s - %s:</I>\r\n%s", fromNick, packet.getChannel(), server.address)
+                            );
+                            break;
+                    }
+
+                    if(message != null) {
+                        message.setParseMode("HTML");
+                        message.disableWebPagePreview();
+                        mChatter.getTelegramClient().execute(message);
+                    }
+                }
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -118,29 +165,21 @@ public class IRCBridge implements LogColorFormatter {
         private final BlockingQueue<String>     mMsgQueue;
         private byte[]                          mInputBuffer;
         private int                             mNickChangeAttempts;
+        private Handler                         mHandler;
 
-        public IRCBridgeThread(ChatterConfig config, IRCServer server) {
+        public IRCBridgeThread(ChatterConfig config, IRCServer server, Handler handler) {
             mConfig             = config;
             mServer             = server;
             mMsgQueue           = new LinkedBlockingQueue<>();
             mInputBuffer        = new byte[4096];
             mNickChangeAttempts = 1;
+            mHandler            = handler;
         }
 
         public void sendMessage(String message) {
             try {
                 mMsgQueue.put(message);
             } catch(Exception ex) {}
-        }
-
-        public void handleMessage(String message) {
-            try {
-                if(message.startsWith("/join #")) {
-                    joinChannel(message.substring("/join #".length()));
-                }
-             } catch (Exception e) {
-
-             }
         }
 
         public void connect() {
@@ -186,21 +225,27 @@ public class IRCBridge implements LogColorFormatter {
 
             try {
                 if(mNickChangeAttempts < 2) {
-                    mOut.write(String.format(
-                                "USER %s %s %s :%s TG<->IRC Bridge - https://t.me/%s\r\n",
+                    mOut.write(
+                        new IRCPacket("USER",
+                            String.format(
+                                "%s %s %s :%s TG<->IRC Bridge - https://t.me/%s\r\n",
                                 mConfig.irc_nickname,
                                 mConfig.irc_nickname,
                                 mConfig.irc_nickname,
                                 mConfig.bot_name,
                                 mConfig.bot_username
-                            ));
+                            ), mServer.encoding
+                        ).getStringData()
+                    );
                     mOut.flush();
                 }
 
                 mOut.write(
-                    mNickChangeAttempts < 2 ?
-                        String.format("NICK %s\r\n", mConfig.irc_nickname) :
-                        String.format("NICK %s%d\r\n", mConfig.irc_nickname, mNickChangeAttempts)
+                    new IRCPacket("NICK", mNickChangeAttempts < 2 ?
+                        String.format("%s\r\n", mConfig.irc_nickname) :
+                        String.format("%s%d\r\n", mConfig.irc_nickname, mNickChangeAttempts),
+                        mServer.encoding
+                    ).getStringData()
                 );
                 mOut.flush();
 
@@ -215,19 +260,37 @@ public class IRCBridge implements LogColorFormatter {
         public boolean listen() {
             try {
                 int bufBytesRead;
-                ByteArrayOutputStream packet = new ByteArrayOutputStream();
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
                 synchronized(mIn) {
                     String msg;
 
                     while((bufBytesRead = mClient.getInputStream().read(mInputBuffer)) != -1) {
-                        packet.write(mInputBuffer, 0, bufBytesRead);
-                        parseIRCPacket(packet);
-                        mConnected = true;
+                        stream.write(mInputBuffer, 0, bufBytesRead);
+                        IRCPacket packet = parseIRCPacket(stream);
 
-                        msg = mMsgQueue.poll(100, TimeUnit.MILLISECONDS);
-                        if(msg != null)
-                            handleMessage(msg);
+                        if(packet.getCommand().equals("PING")) {
+                            mOut.write(
+                                new IRCPacket(
+                                    "PONG", packet.getText(), mServer.encoding
+                                ).getStringData()
+                            );
+                            mOut.flush();
+                        } else if(packet.getMessageCode().equals("001")) {
+                            IRCBridge.this.onSuccess(
+                                String.format(
+                                    "[%s:%d] Connected",
+                                    mServer.address, mServer.port
+                                )
+                            );
+                        } else if(packet.getMessageCode().equals("PRIVMSG")) {
+                            HashMap<String, Object> map = new HashMap<>();
+                            map.put("packet", packet);
+                            map.put("server", mServer);
+                            mHandler.obtainMessage(0, map).sendToTarget();
+                        }
+
+                        mConnected = true;
                     }
 
                     IRCBridge.this.onError(
@@ -247,85 +310,31 @@ public class IRCBridge implements LogColorFormatter {
             return false;
         }
 
-        private void parseIRCPacket(ByteArrayOutputStream packet)  {
+        private IRCPacket parseIRCPacket(ByteArrayOutputStream stream)  {
 
-            String data;
+            String dataStr;
 
             try {
-                data = packet.toString(mServer.encoding);
+                dataStr = stream.toString(mServer.encoding);
 
-                String[] lines = data.split("\r?\n");
+                String[] lines = dataStr.split("\r?\n");
                 boolean incompleteLine = false;
 
-                packet.reset();
+                byte[] data = stream.toByteArray();
 
-                if (!data.endsWith("\n") && lines.length > 0) {
-                    packet.write(lines[lines.length - 1].getBytes(mServer.encoding));
+                stream.reset();
+
+                if (!dataStr.endsWith("\n") && lines.length > 0) {
+                    stream.write(lines[lines.length - 1].getBytes(mServer.encoding));
                     incompleteLine = true;
                 }
 
-                for(int i = 0; i < lines.length; i++) {
-
-                    String[] msgArray = lines[i].split(" ");
-
-                    if(i == lines.length - 1 && incompleteLine) {
-                        break;
-                    }
-
-                    if(lines[i].startsWith("PING")) {
-                        mOut.write(lines[i].replace("PING", "PONG") + "\r\n");
-                        mOut.flush();
-                    } else if(msgArray.length > 3) {
-                        String msgCode = msgArray[1];
-                        String msgTo   = msgArray[2];
-
-                        int msgTextOffset = msgArray[0].length() + 1
-                                            + msgArray[1].length() + 1
-                                            + msgArray[2].length() + 1;
-
-                        String msgText = msgArray[3].charAt(0) == ':' ?
-                                            lines[i].substring(msgTextOffset) :
-                                            lines[i].substring(msgTextOffset + 1);
-
-                        switch(msgCode) {
-                            case "433":
-                                mNickChangeAttempts++;
-                                IRCBridge.this.onWarning(
-                                    String.format(
-                                        "[%s:%d] Nickname %s is already taken, let's try change to %s.",
-                                        mServer.address, mServer.port,
-                                        mConfig.irc_nickname, mConfig.irc_nickname + mNickChangeAttempts
-                                    )
-                                );
-                                identifyMe();
-                                break;
-                            case "001":
-                                IRCBridge.this.onSuccess(
-                                    String.format("[%s:%d] Connected [%s]!", mServer.address, mServer.port)
-                                );
-                                break;
-                            case "396":
-                                IRCBridge.this.onInfo(
-                                    String.format(
-                                        "[%s:%d] %s!%s@%s is now displayed IRC usermask",
-                                        mServer.address, mServer.port, msgTo, msgTo, msgArray[3]
-                                    )
-                                );
-                                break;
-                            case "266":
-                                IRCBridge.this.onInfo(
-                                    String.format("[%s:%d] There are currently %s users on the %s server",
-                                                mServer.address, mServer.port, parseCurrentUserNumbers(msgArray), mServer.address
-                                    )
-                                );
-                                break;
-                        }
-                    } else
-                        continue;
-                }
+                return new IRCPacket(data, mServer.encoding);
             } catch(Exception e) {
-                data = "";
+                dataStr = "";
             }
+
+            return null;
         }
 
         private int parseCurrentUserNumbers(String[] msgArray) {

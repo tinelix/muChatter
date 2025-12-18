@@ -169,6 +169,10 @@ public class MuChatter implements LongPollingSingleThreadUpdateConsumer, LogColo
 	public String getIRCNickname() {
 		return mConfig.use_irc_bridge ? null : mConfig.irc_nickname;
 	}
+
+	public IRCBridge getIRCBridge() {
+		return mIRCBridge;
+	}
 		
 	@Override
 	public boolean onSuccess(String message) {
