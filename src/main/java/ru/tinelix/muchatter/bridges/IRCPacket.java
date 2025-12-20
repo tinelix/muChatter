@@ -3,6 +3,7 @@ package ru.tinelix.muchatter.bridges;
 import java.util.ArrayList;
 
 public class IRCPacket {
+    private long                     packetId;
     private boolean                  incoming;
     private String                   from;
     private String                   channel;
@@ -14,6 +15,22 @@ public class IRCPacket {
     private String                   encoding;
     private ArrayList<IRCNickname>   channelNicks;
     private byte[]                   data;
+
+    public IRCPacket(long packetId, String command, String encoding) {
+        incoming = false;
+        this.command = command;
+        this.encoding = encoding;
+        this.packetId = packetId;
+
+        try {
+            if(command.equals("PONG"))
+                data = String.format("%s\r\n", command).getBytes(encoding);
+            else
+                data = String.format("%s\r\n", command).getBytes(encoding);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public IRCPacket(String command, String text, String encoding) {
         incoming = false;
@@ -184,6 +201,10 @@ public class IRCPacket {
 
     public String getText() {
         return this.text;
+    }
+
+    public long getPacketId() {
+        return this.packetId;
     }
 
     public static class IRCNickname {

@@ -7,6 +7,7 @@ public class Message extends Object {
     public int what;
     public Object obj;
     Handler target;
+    Handler handler;
 
     public Message(int what, Object obj) {
         this.what = what;
@@ -30,5 +31,18 @@ public class Message extends Object {
 
     public void sendToTarget() {
         this.target.handleMessage(this);
+    }
+
+    public Handler getTarget() {
+        return this.target;
+    }
+
+    public Handler getHandler() {
+        return this.handler;
+    }
+
+    public Message setHandler(Handler handler) {
+        this.handler = handler;
+        return this;
     }
 }

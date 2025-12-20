@@ -48,7 +48,6 @@ public class HelloCommand extends BotCommand {
             ResultSet userSettingsDbResult =
                     SQLProcessor.getUserFromDb(mChatter, mDatabase, mTgFrom, "settings");
 
-
             SendMessage message = new SendMessage(
                 Long.toString(mTgChat.getId()),
                 Locale.translate(userDbResult.getString("ui_language"), "greetings", locale_args)

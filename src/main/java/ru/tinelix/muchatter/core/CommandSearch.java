@@ -5,10 +5,11 @@ import java.lang.Class;
 import java.lang.Object;
 import java.lang.reflect.Field;
 
+import ru.tinelix.muchatter.commands.AddToGroupChatCommand;
+import ru.tinelix.muchatter.commands.ChatBridgeCommand;
 import ru.tinelix.muchatter.commands.HelloCommand;
 import ru.tinelix.muchatter.commands.ProfileCommand;
 import ru.tinelix.muchatter.commands.SettingsCommand;
-import ru.tinelix.muchatter.commands.AddToGroupChatCommand;
 
 import ru.tinelix.muchatter.core.BotCommand;
 import ru.tinelix.muchatter.core.MuChatter;
@@ -63,11 +64,12 @@ public class CommandSearch {
     public static HashMap<String, String> getCommandNames() {
         HashMap<String, String> commands = new HashMap<String, String>();
 
-        commands.put("/start",      HelloCommand.COMMAND_NAME);
+        commands.put("/add",        AddToGroupChatCommand.COMMAND_NAME);
+        commands.put("/bridge",     ChatBridgeCommand.COMMAND_NAME);
         commands.put("/hello",      HelloCommand.COMMAND_NAME);
         commands.put("/profile",    ProfileCommand.COMMAND_NAME);
         commands.put("/settings",   SettingsCommand.COMMAND_NAME);
-        commands.put("/add",        AddToGroupChatCommand.COMMAND_NAME);
+        commands.put("/start",      HelloCommand.COMMAND_NAME);
 
         return commands;
     }
@@ -75,11 +77,15 @@ public class CommandSearch {
     public static HashMap<String, String> getCallbacks() {
         HashMap<String, String> commands = new HashMap<String, String>();
 
-        commands.put(ProfileCommand.EDIT_PROFILE_CALLBACK,              ProfileCommand.COMMAND_NAME);
-        commands.put(ProfileCommand.FILL_PROFILE_TEXTAREA_CALLBACK,     ProfileCommand.COMMAND_NAME);
-        commands.put(SettingsCommand.CHANGE_SETTINGS_CALLBACK,          SettingsCommand.COMMAND_NAME);
-        commands.put(SettingsCommand.SET_SETTINGS_CALLBACK,             SettingsCommand.COMMAND_NAME);
-        commands.put(SettingsCommand.SHOW_ADDITIONAL_SETTINGS_CALLBACK, SettingsCommand.COMMAND_NAME);
+        commands.put(ProfileCommand.EDIT_PROFILE_CALLBACK,                  ProfileCommand.COMMAND_NAME);
+        commands.put(ProfileCommand.FILL_PROFILE_TEXTAREA_CALLBACK,         ProfileCommand.COMMAND_NAME);
+        commands.put(SettingsCommand.CHANGE_SETTINGS_CALLBACK,              SettingsCommand.COMMAND_NAME);
+        commands.put(SettingsCommand.SET_SETTINGS_CALLBACK,                 SettingsCommand.COMMAND_NAME);
+        commands.put(SettingsCommand.SHOW_ADDITIONAL_SETTINGS_CALLBACK,     SettingsCommand.COMMAND_NAME);
+        commands.put(ChatBridgeCommand.RUN_CHAT_BRIDGE_WIZARD_CALLBACK,     ChatBridgeCommand.COMMAND_NAME);
+        commands.put(ChatBridgeCommand.CONTINUE_IRC_BRIDGE_WIZARD_CALLBACK, ChatBridgeCommand.COMMAND_NAME);
+        commands.put(ChatBridgeCommand.RUN_IRC_BRIDGE_WIZARD_CALLBACK,      ChatBridgeCommand.COMMAND_NAME);
+        commands.put(ChatBridgeCommand.RUN_IRC_BRIDGE_WIZARD_CALLBACK,      ChatBridgeCommand.COMMAND_NAME);
 
         return commands;
     }

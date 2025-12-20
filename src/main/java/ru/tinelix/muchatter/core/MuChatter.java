@@ -38,6 +38,7 @@ public class MuChatter implements LongPollingSingleThreadUpdateConsumer, LogColo
 		public String 					bot_username;
 		public String 					bot_name;
 		public long   					tg_bot_owner_id;
+		public boolean					private_mode;
 		public boolean					use_irc_bridge;
 		public String 					irc_nickname;
 		public ArrayList<IRCServer> 	irc_servers;
@@ -221,6 +222,9 @@ public class MuChatter implements LongPollingSingleThreadUpdateConsumer, LogColo
 			User 	tgFrom     = update.getMessage().getFrom();
 			Chat 	tgChat     = update.getMessage().getChat();
 			String  tgMsgText  = update.getMessage().getText();
+
+			if(mConfig.private_mode && tgFrom.getId() != mConfig.tg_bot_owner_id)
+				return;
 
 			String[] directCmdArray = tgMsgText.split("@");
 

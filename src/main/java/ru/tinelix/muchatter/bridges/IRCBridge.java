@@ -1,13 +1,16 @@
 package ru.tinelix.muchatter.bridges;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
+import java.net.InetSocketAddress;
+import java.nio.channels.SocketChannel;
+import java.nio.channels.Selector;
+import java.nio.channels.SelectionKey;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.concurrent.Exchanger;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.CompletableFuture;
@@ -32,12 +35,12 @@ public class IRCBridge implements LogColorFormatter {
     public static final String ERROR_COLOR 		= "\u001B[31m"; // Red
     public static final String INFO_COLOR      	= "\u001B[36m"; // Cyan
 
-    private ArrayList<Socket>       mClients;
-    private ChatterConfig           mConfig;
-    private IRCBridgeThread[]       mThreads;
-    private MuChatter               mChatter;
-    private boolean                 mConnected;
-    private Handler                 mHandler;
+    private ChatterConfig                                   mConfig;
+    private IRCBridgeThread[]                               mThreads;
+    private MuChatter                                       mChatter;
+    private boolean                                         mConnected;
+    private final BlockingQueue<HashMap<String, Object>>    mMsgQueue;
+    private Handler                                         mHandler;
 
     public static class IRCServer {
         public String name;
@@ -57,10 +60,12 @@ public class IRCBridge implements LogColorFormatter {
         mHandler    = new Handler() {
                         @Override
                         public void handleMessage(Message msg) {
+                            HashMap<String, Object> map = (HashMap<String, Object>) msg.obj;
                             super.handleMessage(msg);
-                            handleBridgeOutput((HashMap<String, Object>) msg.obj);
+                            handleBridgeOutput(map);
                         }
                     };
+        mMsgQueue = new LinkedBlockingQueue<>();
     }
 
     @Override
@@ -114,7 +119,8 @@ public class IRCBridge implements LogColorFormatter {
                                     serversSize : mConfig.limits.max_bridge_threads;
 
                 for(i = 0; i < maxServers; i++) {
-                    mThreads[i] = new IRCBridgeThread(mConfig, mConfig.irc_servers.get(i), mHandler);
+                    mThreads[i] = new IRCBridgeThread(i, mConfig, mConfig.irc_servers.get(i),
+                                                      mHandler, mMsgQueue);
                     mThreads[i].start();
                 }
             }
@@ -148,166 +154,310 @@ public class IRCBridge implements LogColorFormatter {
                         mChatter.getTelegramClient().execute(message);
                     }
                 }
+
+                if(map.containsKey("msgId")) {
+                    onInfo(String.format("MSGID: %d", (long)map.get("msgId")));
+                }
             }
         } catch(Exception e) {
             e.printStackTrace();
         }
     }
 
-    public class IRCBridgeThread extends Thread {
-        private ChatterConfig                   mConfig;
-        private IRCServer                       mServer;
-        private Socket                          mClient;
-        private BufferedReader                  mIn;
-        private BufferedWriter                  mOut;
-        private boolean                         mIdentified;
-        private boolean                         mConnected;
-        private final BlockingQueue<String>     mMsgQueue;
-        private byte[]                          mInputBuffer;
-        private int                             mNickChangeAttempts;
-        private Handler                         mHandler;
+    public void sendCommand(String command, long msgId, int index) {
+        try {
+            if(mThreads[index] != null && mThreads[index].isAlive()) {
+                HashMap<String, Object> map = new HashMap<>();
+                map.put("command", command);
+                map.put("msgId", msgId);
+                map.put("to", mConfig.irc_servers.get(index).address);
+                mMsgQueue.put(map);
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-        public IRCBridgeThread(ChatterConfig config, IRCServer server, Handler handler) {
-            mConfig             = config;
-            mServer             = server;
-            mMsgQueue           = new LinkedBlockingQueue<>();
-            mInputBuffer        = new byte[4096];
-            mNickChangeAttempts = 1;
-            mHandler            = handler;
+    public int getActiveServersCount() {
+        int count = 0;
+
+        for(int i = 0; i < mThreads.length; i++) {
+            if(mThreads[i] != null && mThreads[i].isAlive())
+                count++;
         }
 
-        public void sendMessage(String message) {
+        return count;
+    }
+
+    public class IRCBridgeThread extends Thread {
+        private ChatterConfig                                       mConfig;
+        private IRCServer                                           mServer;
+        private SocketChannel                                       mClientChannel;
+        private ByteBuffer                                          mIn;
+        private ByteBuffer                                          mOut;
+        private boolean                                             mIdentified;
+        private boolean                                             mConnected;
+        private final BlockingQueue<HashMap<String, Object>>        mMsgQueue;
+        private int                                                 mNickChangeAttempts;
+        private Handler                                             mParentHandler;
+        private int                                                 mIndex;
+        private Selector                                            mSelector;
+
+        public IRCBridgeThread(int index, ChatterConfig config, IRCServer server, Handler handler,
+                               BlockingQueue<HashMap<String, Object>> msgQueue) {
+            mConfig             = config;
+            mServer             = server;
+            mMsgQueue           = msgQueue;
+            mNickChangeAttempts = 1;
+            mParentHandler      = handler;
+            mIndex              = index;
             try {
-                mMsgQueue.put(message);
-            } catch(Exception ex) {}
+                mIn = ByteBuffer.allocate(4096);
+                mOut = ByteBuffer.allocate(4096);
+                mSelector = Selector.open();
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        private void handleCommand(HashMap<String, Object> map) {
+            try {
+                IRCBridge.this.onInfo("TEST 1!");
+                String command = "";
+                String to = "";
+                long msgId = 0;
+
+                if(map.containsKey("command")) {
+                    command = (String) map.get("command");
+                    msgId = (Long) map.get("msgId");
+                    to = (String) map.get("to");
+
+                    if(to.equals(mServer.address)) {
+                        switch(command) {
+                            case "/rules":
+                                sendResponse("RULES\r\n".getBytes());
+                                break;
+                        }
+                    }
+                }
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
         }
 
         public void connect() {
             try {
-                mClient = new Socket(mServer.address, mServer.port);
-
+                mClientChannel = SocketChannel.open();
+                mClientChannel.configureBlocking(false);
                 onInfo(
                     String.format("Connecting to %s:%s...", mServer.address, mServer.port)
                 );
 
-                mIn = new BufferedReader(
-                    new InputStreamReader(mClient.getInputStream())
-                );
-
-                mOut = new BufferedWriter(
-                    new OutputStreamWriter(mClient.getOutputStream())
-                );
-
+                mClientChannel.connect(new InetSocketAddress(mServer.address, mServer.port));
                 mConnected = true;
 
-                identifyMe();
-            } catch (Exception e) {
-                IRCBridge.this.onError(
-                    String.format("IRCBridge: [%s:%d] ", mServer.address, mServer.port) + e.getMessage()
-                );
-            }
-        }
+                mClientChannel.register(mSelector, SelectionKey.OP_CONNECT | SelectionKey.OP_READ);
 
-        public void run() {
-            try {
-                connect();
                 listen();
             } catch (Exception e) {
                 IRCBridge.this.onError(
                     String.format("IRCBridge: [%s:%d] ", mServer.address, mServer.port) + e.getMessage()
                 );
+                e.printStackTrace();
+            }
+        }
+
+        public void run() {
+            try {
+                mHandler = new Handler() {
+                                    @Override
+                                    public void handleMessage(Message msg) {
+                                        super.handleMessage(msg);
+                                        handleCommand((HashMap<String, Object>)msg.obj);
+                                    }
+                               };
+                connect();
+            } catch (Exception e) {
+                IRCBridge.this.onError(
+                    String.format("IRCBridge: [%s:%d] ", mServer.address, mServer.port) + e.getMessage()
+                );
+                e.printStackTrace();
             }
         }
 
         private void identifyMe() {
-            if(mNickChangeAttempts > 6)
+
+            if(mNickChangeAttempts > 6) {
+                IRCBridge.this.onError("The limit for changing nicknames has been reached.");
                 return;
+            } else if(mIdentified) {
+                return;
+            }
 
             try {
                 if(mNickChangeAttempts < 2) {
-                    mOut.write(
+                    sendResponse(
                         new IRCPacket("USER",
                             String.format(
-                                "%s %s %s :%s TG<->IRC Bridge - https://t.me/%s\r\n",
+                                "%s %s %s :%s TG<->IRC Bridge - https://t.me/%s",
                                 mConfig.irc_nickname,
                                 mConfig.irc_nickname,
                                 mConfig.irc_nickname,
                                 mConfig.bot_name,
                                 mConfig.bot_username
                             ), mServer.encoding
-                        ).getStringData()
+                        ).getRawData()
                     );
-                    mOut.flush();
                 }
 
-                mOut.write(
+                sendResponse(
                     new IRCPacket("NICK", mNickChangeAttempts < 2 ?
-                        String.format("%s\r\n", mConfig.irc_nickname) :
-                        String.format("%s%d\r\n", mConfig.irc_nickname, mNickChangeAttempts),
+                        String.format("%s", mConfig.irc_nickname) :
+                        String.format("%s%d", mConfig.irc_nickname, mNickChangeAttempts),
                         mServer.encoding
-                    ).getStringData()
+                    ).getRawData()
                 );
-                mOut.flush();
 
                 onInfo(
                     String.format("[%s:%s] The bot has been identified", mServer.address, mServer.port)
                 );
+                mIdentified = true;
             } catch (Exception e) {
                 IRCBridge.this.onError(e.getMessage());
+                e.printStackTrace();
             }
         }
 
         public boolean listen() {
             try {
                 int bufBytesRead;
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
-                synchronized(mIn) {
-                    String msg;
+                HashMap<String, Object> map = new HashMap<>();
 
-                    while((bufBytesRead = mClient.getInputStream().read(mInputBuffer)) != -1) {
-                        stream.write(mInputBuffer, 0, bufBytesRead);
-                        IRCPacket packet = parseIRCPacket(stream);
+                while(true) {
+                    int readyChannels = mSelector.select();
 
-                        if(packet.getCommand().equals("PING")) {
-                            mOut.write(
-                                new IRCPacket(
-                                    "PONG", packet.getText(), mServer.encoding
-                                ).getStringData()
-                            );
-                            mOut.flush();
-                        } else if(packet.getMessageCode().equals("001")) {
-                            IRCBridge.this.onSuccess(
-                                String.format(
-                                    "[%s:%d] Connected",
-                                    mServer.address, mServer.port
-                                )
-                            );
-                        } else if(packet.getMessageCode().equals("PRIVMSG")) {
-                            HashMap<String, Object> map = new HashMap<>();
-                            map.put("packet", packet);
-                            map.put("server", mServer);
-                            mHandler.obtainMessage(0, map).sendToTarget();
+                    map = mMsgQueue.poll(50, TimeUnit.MILLISECONDS);
+
+                    if(map != null)
+                        handleCommand(map);
+
+                    if (readyChannels == 0) continue;
+
+                    Set<SelectionKey> selectedKeys = mSelector.selectedKeys();
+                    Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
+                    HashMap<String, Object> output_map = new HashMap<>();
+
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+                    IRCPacket packet = null;
+
+                    while(keyIterator.hasNext()) {
+                        SocketChannel channel = null;
+                        SelectionKey key = keyIterator.next();
+                        ByteBuffer out = (ByteBuffer) key.attachment();
+
+                        if (!key.isValid()) {
+                            continue;
                         }
 
+                        if (key.isConnectable()) {
+                            channel = (SocketChannel) key.channel();
+                            try {
+                                mConnected = channel.finishConnect();
+                                if(mConnected) {
+                                    key.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+                                    identifyMe();
+                                }
+                            } catch (Exception e) {
+
+                            }
+                        } else {
+                            channel = mClientChannel;
+                        }
+
+                        if (key.isReadable()) {
+                            int bytesRead = channel.read(mIn);
+
+                            if(bytesRead > 0) {
+                                mIn.flip();
+                                baos.write(mIn.array());
+                                packet = parseIRCPacket(baos);
+                                IRCBridge.this.onInfo("\"" + new String(mIn.array(), mServer.encoding) + "\"");
+                                mIn.clear();
+
+                            }
+                        }
+
+                        if(key.isWritable() && packet != null) {
+                            switch(packet.getCommand()) {
+                                case "PING":
+                                    sendResponse(
+                                        new IRCPacket(
+                                            "PONG", packet.getText(), mServer.encoding
+                                        ).getRawData()
+                                    );
+                                    break;
+                                case "001":
+                                    IRCBridge.this.onSuccess(
+                                        String.format(
+                                            "[%s:%d] Connected",
+                                            mServer.address, mServer.port
+                                        )
+                                    );
+
+                                    output_map.put("index", mIndex);
+
+                                    mParentHandler.obtainMessage(0, output_map).sendToTarget();
+                                    break;
+                                case "PRIVMSG":
+                                case "232":
+                                    output_map.put("packet", packet);
+                                    output_map.put("server", mServer);
+                                    output_map.put("index", mIndex);
+
+                                    if(map != null) {
+                                        if(map.containsKey("msgId")) {
+                                            output_map.put("msgId", map.get("msgId"));
+                                        }
+                                    }
+                                    mParentHandler.obtainMessage(0, output_map).sendToTarget();
+                                    IRCBridge.this.onInfo("TEST 2");
+                                    break;
+                                case "309":
+                                    if(map != null)
+                                        map = null;
+
+                                    output_map.put("packet", packet);
+                                    output_map.put("server", mServer);
+                                    break;
+                                case "ERROR":
+                                        IRCBridge.this.onError(
+                                        String.format(
+                                            "[%s:%d] %s",
+                                            mServer.address, mServer.port, packet.getText()
+                                        )
+                                    );
+                                    break;
+                                }
+                        }
+
+                        keyIterator.remove();
                         mConnected = true;
                     }
-
-                    IRCBridge.this.onError(
-                        String.format(
-                            "IRCBridge: [%s:%d] Connection closed",
-                            mServer.address, mServer.port
-                        )
-                    );
-                    mConnected = false;
                 }
-                return mConnected;
             } catch (Exception e) {
                 e.printStackTrace();
                 IRCBridge.this.onError(e.getMessage());
             }
 
-            return false;
+            return true;
+        }
+
+        private void sendResponse(byte[] response) throws Exception {
+            ByteBuffer buf = ByteBuffer.wrap(response);
+            int written = mClientChannel.write(buf);
+            buf.clear();
         }
 
         private IRCPacket parseIRCPacket(ByteArrayOutputStream stream)  {
@@ -354,15 +504,22 @@ public class IRCBridge implements LogColorFormatter {
 
         public void joinChannel(String channelName) {
             try {
-                mOut.write(String.format(
-                                "JOIN #%s\r\n",
-                                channelName
-                            ));
-                mOut.flush();
+                mOut.wrap(new IRCPacket(
+                                "JOIN",
+                                "#" + channelName,
+                                mServer.encoding
+                            ).getRawData());
+                while(mOut.hasRemaining()) {
+                    mClientChannel.write(mOut);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 IRCBridge.this.onError(e.getMessage());
             }
+        }
+
+        public Handler getHandler() {
+            return mHandler;
         }
     }
 }

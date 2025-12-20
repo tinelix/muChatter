@@ -12,6 +12,12 @@ public class Handler extends Object {
         messages = new ArrayList<>();
     }
 
+    public final Message obtainMessage(int what, Object obj, Handler handler) {
+        Message message = new Message(what, obj, this);
+        messages.add(message);
+        return message;
+    }
+
     public final Message obtainMessage(int what, Object obj) {
         Message message = new Message(what, obj, this);
         messages.add(message);

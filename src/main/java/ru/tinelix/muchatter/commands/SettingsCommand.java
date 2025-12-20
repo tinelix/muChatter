@@ -345,7 +345,7 @@ public class SettingsCommand extends BotCommand {
             columns = SQLCreator.getPublicGroupChatSettingsColumns();
             columns.get(2).readOnly = true;
             columns.get(3).readOnly = true;
-            columns.get(5).setAdditionalSettingsCallback(ChatBridgeCommand.RUN_IRC_BRIDGE_WIZARD);
+            columns.get(5).setAdditionalSettingsCallback(ChatBridgeCommand.RUN_IRC_BRIDGE_WIZARD_CALLBACK);
         } else {
             columns = SQLCreator.getPublicUserSettingsColumns();
         }

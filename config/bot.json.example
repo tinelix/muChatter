@@ -7,6 +7,7 @@
   "tg_token":         "[TELEGRAM_BOT_TOKEN]",
   "bot_username":     "[TELEGRAM_BOT_USERNAME]",
   "bot_name":         "[BOT_NAME]",
+  "private_mode":     false,
   "tg_bot_owner_id":  0,          // your Telegram user ID
   "use_irc_bridge":   false,      // if "false" set, ignore below
   "irc_nickname":     "[IRC_BOT_NICKNAME]",
