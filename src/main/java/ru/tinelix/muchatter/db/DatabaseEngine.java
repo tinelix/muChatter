@@ -153,8 +153,8 @@ public class DatabaseEngine implements LogColorFormatter {
             return false;
         }
         
-        String safeTableName = table.replace("\"", "\"\"")
-									.replace("=", "").replace(" ", "");
+        String safeTableName = "`" + table.replace("\"", "\"\"")
+									.replace("=", "").replace(" ", "") + "`";
 
         String safeColumnName = column.replace("\"", "\"\"")
 									.replace("=", "").replace(" ", "");
@@ -190,8 +190,8 @@ public class DatabaseEngine implements LogColorFormatter {
 
         column = column.replace("\"", "\"\"");
         
-        String safeTableName = table.replace("\"", "\"\"")
-									.replace("=", "").replace(" ", "");
+        String safeTableName = "`" + table.replace("\"", "\"\"")
+									.replace("=", "").replace(" ", "") + "`";
 
         String safeColumnName = '"' + column.replace("\"", "\"\"")
 									  .replace("=", "").replace(" ", "");
@@ -225,8 +225,8 @@ public class DatabaseEngine implements LogColorFormatter {
             return false;
         }
 
-        String safeTableName = table.replace("\"", "\"\"")
-									.replace("=", "").replace(" ", "");
+        String safeTableName = "`" + table.replace("\"", "\"\"")
+									.replace("=", "").replace(" ", "") + "`";
 
         String safeColumnName = column.replace("\"", "\"\"").replace("\"", "\"\"")
 									  .replace("=", "").replace(" ", "");
@@ -256,7 +256,7 @@ public class DatabaseEngine implements LogColorFormatter {
 	) throws SQLException {
 
         StringBuilder query = new StringBuilder("SELECT ");
-        query.append(columns).append(" FROM ").append(table);
+        query.append(columns).append(" FROM ").append("`" + table + "`");
 
         if (!whereColumn.trim().isEmpty()) {
             query.append(" WHERE ").append(whereColumn)
@@ -276,7 +276,7 @@ public class DatabaseEngine implements LogColorFormatter {
 	) throws SQLException {
 		
         StringBuilder query = new StringBuilder("SELECT ");
-        query.append(columns).append(" FROM ").append(table);
+        query.append(columns).append(" FROM ").append("`" + table + "`");
         
         if (!whereColumn.trim().isEmpty()) {
             query.append(" WHERE ").append(whereColumn)
@@ -307,7 +307,7 @@ public class DatabaseEngine implements LogColorFormatter {
         }
 
 		StringBuilder query = new StringBuilder("INSERT INTO ");
-		query.append(table).append("(");
+		query.append("`" + table + "`").append("(");
 
 		for(int i = 0; i < values.keySet().size(); i++) {
 			if(i < values.keySet().size() - 1) {

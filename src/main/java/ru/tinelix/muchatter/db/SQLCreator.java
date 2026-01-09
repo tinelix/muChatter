@@ -124,14 +124,14 @@ public class SQLCreator {
         ")";
 
     public static final String SQL_CREATE_GROUPS_TABLE = "" +
-        "CREATE TABLE IF NOT EXISTS groups (" +
+        "CREATE TABLE IF NOT EXISTS `groups` (" +
             "tg_group_id BIGINT PRIMARY KEY, " +
             "name VARCHAR(120) NOT NULL, " +
             "public_name VARCHAR(180) " +
         ")";
 
     public static final String SQL_CREATE_GROUP_WARNINGS_TABLE = "" +
-        "CREATE TABLE IF NOT EXISTS group_warnings (" +
+        "CREATE TABLE IF NOT EXISTS `group_warnings` (" +
             "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
             "tg_group_id BIGINT NOT NULL, " +
             "from_tg_id BIGINT NOT NULL, " +
@@ -140,7 +140,7 @@ public class SQLCreator {
         ")";
 
     public static final String SQL_CREATE_GROUP_STATS_TABLE = "" +
-        "CREATE TABLE IF NOT EXISTS group_stats (" +
+        "CREATE TABLE IF NOT EXISTS `group_stats` (" +
             "tg_group_id BIGINT PRIMARY KEY, " +
             "tg_user_id BIGINT, " +
             "score BIGINT NOT NULL, " +
@@ -148,11 +148,11 @@ public class SQLCreator {
             "messages_count BIGINT NOT NULL, " +
             "levels_act_date DATE NOT NULL, " +
             "CONSTRAINT group_stats_fk " +
-            "FOREIGN KEY (tg_group_id) REFERENCES groups (tg_group_id)" +
+            "FOREIGN KEY (tg_group_id) REFERENCES `groups` (tg_group_id)" +
         ")";
 
     public static final String SQL_CREATE_GROUP_SETTINGS_TABLE = "" +
-        "CREATE TABLE IF NOT EXISTS group_settings (" +
+        "CREATE TABLE IF NOT EXISTS `group_settings` (" +
             "tg_group_id BIGINT PRIMARY KEY NOT NULL, " +
             "ui_language VARCHAR(8) NOT NULL, " +
             "timezone INT NOT NULL, " +
@@ -165,22 +165,22 @@ public class SQLCreator {
             "warns_amount INT NOT NULL, " +
             "levels BOOLEAN NOT NULL, " +
             "CONSTRAINT group_settings_fk " +
-            "FOREIGN KEY (tg_group_id) REFERENCES groups (tg_group_id)" +
+            "FOREIGN KEY (tg_group_id) REFERENCES `groups` (tg_group_id)" +
         ")";
 
     public static final String SQL_CREATE_GROUP_BRIDGES_TABLE = "" +
-        "CREATE TABLE IF NOT EXISTS group_bridges (" +
+        "CREATE TABLE IF NOT EXISTS `group_bridges` (" +
             "tg_group_id BIGINT PRIMARY KEY, " +
             "irc_server_id BIGINT, " +
             "irc_channel VARCHAR(30), " +
             "xmpp_group_id VARCHAR(255), " +
             "matrix_group_id VARCHAR(255), " +
             "CONSTRAINT group_bridges_fk " +
-            "FOREIGN KEY (tg_group_id) REFERENCES groups (tg_group_id)" +
+            "FOREIGN KEY (tg_group_id) REFERENCES `groups` (tg_group_id)" +
         ")";
 
     public static final String SQL_CREATE_GROUP_CAPTCHAS_TABLE = "" +
-        "CREATE TABLE IF NOT EXISTS group_captchas (" +
+        "CREATE TABLE IF NOT EXISTS `group_captchas` (" +
             "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
             "tg_group_id BIGINT NOT NULL, " +
             "question VARCHAR(255) NOT NULL, " +
@@ -202,7 +202,7 @@ public class SQLCreator {
             "content_regex TEXT NOT NULL, " +
             "reason VARCHAR(255) NOT NULL, " +
             "CONSTRAINT group_spamfilters_fk " +
-            "FOREIGN KEY (tg_group_id) REFERENCES groups (tg_group_id)" +
+            "FOREIGN KEY (tg_group_id) REFERENCES `groups` (tg_group_id)" +
         ")";
 
     public static ArrayList<ExtendedColumn> getPublicUserColumns() {
