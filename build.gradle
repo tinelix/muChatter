@@ -9,8 +9,8 @@ repositories {
 
 group = 'ru.tinetlix.muchatter'
 version = '1.0-SNAPSHOT'
-sourceCompatibility = '16'
-targetCompatibility = '16'
+sourceCompatibility = '18'
+targetCompatibility = '18'
 
 application {
     mainClassName = 'ru.tinelix.muchatter.BotApplication'
